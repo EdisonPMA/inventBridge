@@ -11,6 +11,11 @@ async function DBconnect() {
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
       connectionLimit: 1,
+
+      ssl: {
+    minVersion: "TLSv1.2",
+    rejectUnauthorized: true
+}
     });
 
     const connection = await tempPool.getConnection();
