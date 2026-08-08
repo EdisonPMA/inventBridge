@@ -36,6 +36,12 @@ const aiRoutes           = require("./routes/AI.route");
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// ── Allowed origins (supports comma-separated list in CLIENT_ORIGIN) ──
+const allowedOrigins = (process.env.CLIENT_ORIGIN || process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 // ── Security headers ───────────────────────────────
 app.use(helmet({
   crossOriginEmbedderPolicy: false, // allow Cloudinary media embeds
@@ -45,7 +51,7 @@ app.use(helmet({
       scriptSrc:      ["'self'"],
       styleSrc:       ["'self'", "'unsafe-inline'"], // Tailwind inline styles
       imgSrc:         ["'self'", "data:", "https:", "blob:"], // Cloudinary, Google avatars
-      connectSrc:     ["'self'", process.env.CLIENT_ORIGIN || "http://localhost:5173"],
+      connectSrc:     ["'self'", ...allowedOrigins],
       fontSrc:        ["'self'", "https:", "data:"],
       objectSrc:      ["'none'"],
       mediaSrc:       ["'self'", "https:"],
@@ -56,7 +62,12 @@ app.use(helmet({
 
 // ── CORS ───────────────────────────────────────────
 app.use(cors({
-  origin:      process.env.CLIENT_ORIGIN || "http://localhost:5173",
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Render health checks)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
   credentials: true,
   methods:     ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type","Authorization"],
