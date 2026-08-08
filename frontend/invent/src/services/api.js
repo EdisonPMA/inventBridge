@@ -12,8 +12,8 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 const api = axios.create({
   baseURL:         BASE_URL,
   headers:         { "Content-Type": "application/json" },
-  timeout:         15000,
-  withCredentials: true, // send httpOnly refresh cookie on every request
+  timeout:         60000, // 60s — accounts for Render free-tier cold start (~30-50s)
+  withCredentials: true,  // send httpOnly refresh cookie on every request
 });
 
 // ── In-memory token store ─────────────────────────
@@ -90,6 +90,19 @@ api.interceptors.response.use(
       } catch {
         // Refresh failed — fall through to reject
       }
+    }
+
+    // Friendly message for cold-start timeouts
+    if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
+      return Promise.reject(new Error(
+        "The server is waking up — this can take up to 30 seconds on first use. Please try again."
+      ));
+    }
+
+    if (err.code === "ERR_NETWORK" || err.message?.includes("Network Error")) {
+      return Promise.reject(new Error(
+        "Unable to reach the server. Please check your connection and try again."
+      ));
     }
 
     const message =

@@ -163,6 +163,19 @@ DBconnect()
     server.listen(PORT, () =>
       console.log(`🚀 Server running on http://localhost:${PORT} (Socket.IO enabled)`)
     );
+
+    // ── Keep-alive ping ──────────────────────────────
+    // Render free tier sleeps after 15 min of inactivity.
+    // Ping the DB pool every 10 min to keep connections alive
+    // and reduce cold-start latency for users.
+    const db = require("./config/database");
+    setInterval(async () => {
+      try {
+        await db.execute("SELECT 1");
+      } catch (e) {
+        console.warn("[keep-alive] DB ping failed:", e.message);
+      }
+    }, 10 * 60 * 1000); // every 10 minutes
   })
   .catch((err) => {
     console.error("Failed to start server:", err.message);

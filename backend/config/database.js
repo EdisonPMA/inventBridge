@@ -9,9 +9,10 @@ const pool = mysql.createPool({
   database:         process.env.DB_NAME,
   connectionLimit:  10,
   waitForConnections: true,
-  queueLimit:       50,   // fail fast instead of queuing forever under load
+  queueLimit:       50,
   enableKeepAlive:  true,
   keepAliveInitialDelay: 0,
+  connectTimeout:   30000, // 30s — TiDB Cloud can be slow on first connection
   // SSL for non-localhost environments
   ...(process.env.DB_HOST !== "localhost" && process.env.DB_HOST !== "127.0.0.1"
     ? { ssl: { rejectUnauthorized: true } }
