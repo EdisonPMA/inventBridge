@@ -1,6 +1,7 @@
 const express  = require("express");
 const router   = express.Router();
 const { requireAuth, requireRole } = require("../middelwares/auth.middleware");
+const { authLimiter, registerLimiter } = require("../middelwares/rateLimit.middleware");
 const {
   createUser, userLogin, refreshToken, logout,
   getPlatformStats, getPublicDirectory, getSuccessStories,
@@ -8,10 +9,10 @@ const {
 } = require("../controllers/Auth.controller");
 
 // ── Public ────────────────────────────────────────
-router.post("/register",        createUser);
-router.post("/login",           userLogin);
-router.post("/refresh",         refreshToken);
-router.post("/logout",          requireAuth, logout);
+router.post("/register",        registerLimiter, createUser);
+router.post("/login",           authLimiter,     userLogin);
+router.post("/refresh",         authLimiter,     refreshToken);
+router.post("/logout",          requireAuth,     logout);
 
 // ── Public read ───────────────────────────────────
 router.get("/stats",            getPlatformStats);

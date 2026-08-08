@@ -157,9 +157,11 @@ async function logout(req, res) {
 }
 
 /* ── Platform stats (public — for landing page) ── */
+const { getOrSet } = require("../utils/cache");
 async function getPlatformStats(req, res) {
   try {
-    const stats = await userModel.getPlatformStats();
+    // Cache for 5 minutes — these counters don't need to be real-time
+    const stats = await getOrSet("platform_stats", () => userModel.getPlatformStats(), 300);
     return res.status(200).json({ stats });
   } catch {
     return res.status(500).json({ message: "Could not fetch stats." });

@@ -54,23 +54,25 @@ function verifyRefreshToken(token) {
 /* ── Cookie helpers ──────────────────────────────── */
 const REFRESH_COOKIE = "innovest_refresh";
 
-/** Set the refresh token as an httpOnly Secure SameSite=Strict cookie. */
+/** Set the refresh token as an httpOnly Secure SameSite cookie. */
 function setRefreshCookie(res, token) {
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie(REFRESH_COOKIE, token, {
-    httpOnly:  true,
-    secure:    process.env.NODE_ENV === "production",
-    sameSite:  "strict",
-    maxAge:    7 * 24 * 60 * 60 * 1000, // 7 days in ms
-    path:      "/api/auth",             // only sent to /api/auth/* routes
+    httpOnly: true,
+    secure:   isProd,           // HTTPS only in production
+    sameSite: isProd ? "none" : "strict", // "none" required for cross-origin (Vercel → Render)
+    maxAge:   7 * 24 * 60 * 60 * 1000,   // 7 days in ms
+    path:     "/api/auth",               // only sent to /api/auth/* routes
   });
 }
 
 /** Clear the refresh token cookie on logout. */
 function clearRefreshCookie(res) {
+  const isProd = process.env.NODE_ENV === "production";
   res.clearCookie(REFRESH_COOKIE, {
     httpOnly: true,
-    secure:   process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure:   isProd,
+    sameSite: isProd ? "none" : "strict",
     path:     "/api/auth",
   });
 }

@@ -9,23 +9,32 @@
  * Fix: look up accepted connections for the user from the DB once on
  * connect/disconnect and emit only to sockets belonging to those users.
  */
-const db = require("../config/database");
+const db    = require("../config/database");
+const { getOrSet, invalidate } = require("../utils/cache");
 
 /**
  * Fetch the set of user IDs that share an accepted connection with userId.
- * Returns an empty Set on any DB error so presence never blocks a connection.
+ * Cached for 2 minutes — presence doesn't need to be perfectly real-time.
+ * Cache is invalidated when a connection is accepted/removed.
  * @param {number} userId
  * @returns {Promise<Set<number>>}
  */
 async function getConnectionIds(userId) {
   try {
-    const [rows] = await db.execute(
-      `SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS peer_id
-       FROM connections
-       WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'`,
-      [userId, userId, userId]
+    const rows = await getOrSet(
+      `presence_connections:${userId}`,
+      async () => {
+        const [result] = await db.execute(
+          `SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS peer_id
+           FROM connections
+           WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'`,
+          [userId, userId, userId]
+        );
+        return result.map((r) => r.peer_id);
+      },
+      120 // 2 minutes
     );
-    return new Set(rows.map((r) => r.peer_id));
+    return new Set(rows);
   } catch {
     return new Set();
   }
@@ -55,4 +64,4 @@ async function emitPresenceToConnections(io, onlineUsers, userId, event) {
   } catch { /* never block */ }
 }
 
-module.exports = { emitPresenceToConnections };
+module.exports = { emitPresenceToConnections, invalidate };

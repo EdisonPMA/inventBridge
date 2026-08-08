@@ -4,10 +4,11 @@ const express     = require("express");
 const cors        = require("cors");
 const helmet      = require("helmet");
 const morgan      = require("morgan");
+const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const DBconnect   = require("./config/connection");
 const { createSocketServer } = require("./socket/socketServer");
-const { generalLimiter, authLimiter } = require("./middelwares/rateLimit.middleware");
+const { generalLimiter } = require("./middelwares/rateLimit.middleware");
 
 // ── Route imports ─────────────────────────────────
 const authRoutes         = require("./routes/Auth.route");
@@ -77,6 +78,9 @@ app.use(cors({
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
+// ── Compression — reduces response size ~70% for JSON payloads ──
+app.use(compression());
+
 // ── Cookie parser (needed for httpOnly refresh token cookie) ──
 app.use(cookieParser());
 
@@ -109,7 +113,7 @@ app.get("/health", (_req, res) =>
 );
 
 // ── API routes ─────────────────────────────────────
-app.use("/api/auth",           authLimiter, authRoutes);
+app.use("/api/auth",           authRoutes);
 app.use("/api/auth",           googleAuthRoutes); // Google OAuth (own rate limit inside)
 app.use("/api/users",          userRoutes);
 app.use("/api/profiles",       profileRoutes);

@@ -17,7 +17,8 @@ const uploadLimiter = rateLimit({
 });
 
 /**
- * Auth limiter — 10 attempts per IP per 15 minutes.
+ * Auth limiter — 10 login attempts per IP per 15 minutes.
+ * Applied only to /login and /refresh.
  */
 const authLimiter = rateLimit({
   windowMs:         15 * 60 * 1000,
@@ -28,11 +29,24 @@ const authLimiter = rateLimit({
 });
 
 /**
- * General API limiter — 200 requests per IP per minute.
+ * Register limiter — 5 registrations per IP per hour.
+ * More lenient than login but still prevents signup spam.
+ */
+const registerLimiter = rateLimit({
+  windowMs:         60 * 60 * 1000, // 1 hour
+  max:              5,
+  message:          { message: "Too many registration attempts. Please try again in an hour." },
+  standardHeaders:  true,
+  legacyHeaders:    false,
+});
+
+/**
+ * General API limiter — 100 requests per IP per minute.
+ * Tightened for free-tier hosting (Render 512MB RAM, shared CPU).
  */
 const generalLimiter = rateLimit({
   windowMs:         60 * 1000,
-  max:              200,
+  max:              100,
   message:          { message: "Too many requests. Please slow down." },
   standardHeaders:  true,
   legacyHeaders:    false,
@@ -54,4 +68,4 @@ const aiLimiter = rateLimit({
   skip:            (req) => req.user?.role === "admin",
 });
 
-module.exports = { uploadLimiter, authLimiter, generalLimiter, aiLimiter };
+module.exports = { uploadLimiter, authLimiter, registerLimiter, generalLimiter, aiLimiter };

@@ -53,6 +53,7 @@ function registerMessageHandlers(socket, io, onlineUsers) {
       if (!conversationId) throw new Error("conversationId required.");
       if (!message?.trim() && !attachment_url) throw new Error("message or attachment required.");
 
+      // Fetch participants ONCE — reuse for both auth check and notification
       const participants = await Conversation.getParticipants(conversationId);
       if (!participants.some(p => p.user_id === userId)) throw new Error("Not a participant.");
 
@@ -71,24 +72,27 @@ function registerMessageHandlers(socket, io, onlineUsers) {
 
       io.to(`conversation:${conversationId}`).emit("new_message", saved);
 
-      // Notify offline + muted-exempt participants
-      const others = participants.filter(p => p.user_id !== userId && !p.is_muted);
-      for (const p of others) {
+      // Notify other non-muted participants — reuse participants list from above
+      const preview = message?.trim()?.slice(0, 80) || "📎 Attachment";
+      const others  = participants.filter(p => p.user_id !== userId && !p.is_muted);
+      const notifyPromises = others.map((p) => {
         const isOnline = onlineUsers.has(p.user_id) && onlineUsers.get(p.user_id).size > 0;
-        const preview  = message?.trim()?.slice(0, 80) || "📎 Attachment";
         if (!isOnline) {
-          Notification.create({
+          return Notification.create({
             user_id: p.user_id,
             title:   "New Message",
             message: preview,
             type:    "message",
           }).catch(() => {});
         } else {
-          onlineUsers.get(p.user_id).forEach(sid => {
-            io.to(sid).emit("notification", { type: "message", title: "New Message", message: preview });
-          });
+          onlineUsers.get(p.user_id).forEach(sid =>
+            io.to(sid).emit("notification", { type: "message", title: "New Message", message: preview })
+          );
+          return Promise.resolve();
         }
-      }
+      });
+      // Fire notifications in parallel, don't await — don't block the response
+      Promise.allSettled(notifyPromises).catch(() => {});
 
       if (typeof cb === "function") cb({ ok: true, message: saved });
     } catch (err) {
