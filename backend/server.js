@@ -152,11 +152,7 @@ app.use("/api/reports",        reportRoutes);
 app.use("/api/ai",             aiRoutes);
 
 // ── Convenience aliases ────────────────────────────
-app.use("/api/me/saved-startups", savedStartupRoutes);
-app.get("/api/me/following", require("./middelwares/auth.middleware").requireAuth, (req, res, next) => {
-  req.url = "/me/following";
-  followerRoutes(req, res, next);
-});
+// /api/following/me/following already exists via the follower route mount
 
 // ── 404 handler ────────────────────────────────────
 app.use((req, res) =>

@@ -34,9 +34,14 @@ async function toggleSave(req, res) {
 /* ── GET /api/saved-startups/:startupId/status ───── */
 async function getSaveStatus(req, res) {
   try {
-    const saved = await SavedStartup.isSaved(req.user.id, req.params.startupId);
-    const count = await SavedStartup.countSaves(req.params.startupId);
-    return res.json({ saved, count });
+    const db = require("../config/database");
+    const [[row]] = await db.execute(
+      `SELECT COUNT(*) AS total,
+              MAX(CASE WHEN user_id = ? THEN 1 ELSE 0 END) AS is_saved
+       FROM saved_startups WHERE startup_id = ?`,
+      [req.user.id, req.params.startupId]
+    );
+    return res.json({ saved: row.is_saved === 1, count: Number(row.total) });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

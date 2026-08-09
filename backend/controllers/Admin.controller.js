@@ -32,58 +32,49 @@ async function audit(adminId, action, targetType, targetId, details) {
    ════════════════════════════════════════════════ */
 async function getDashboardStats(req, res) {
   try {
-    const q = async (sql, p = []) => { const [[r]] = await db.execute(sql, p); return r; };
-
-    const [
-      totalUsers, activeUsers, suspendedUsers,
-      totalStartups, verifiedStartups, pendingStartups, rejectedStartups,
-      totalInvestors, verifiedInvestors, pendingInvestors,
-      pendingVerifications, pendingReports,
-      activeOffers, acceptedOffers, rejectedOffers,
-      totalPosts, reportedPosts,
-    ] = await Promise.all([
-      q("SELECT COUNT(*) AS v FROM users"),
-      q("SELECT COUNT(*) AS v FROM users WHERE status = 'active'"),
-      q("SELECT COUNT(*) AS v FROM users WHERE status = 'suspended'"),
-      q("SELECT COUNT(*) AS v FROM startups"),
-      q("SELECT COUNT(*) AS v FROM startups WHERE verification_status = 'verified'"),
-      q("SELECT COUNT(*) AS v FROM startups WHERE verification_status = 'pending'"),
-      q("SELECT COUNT(*) AS v FROM startups WHERE verification_status = 'rejected'"),
-      q("SELECT COUNT(*) AS v FROM users WHERE role = 'investor'"),
-      q(`SELECT COUNT(*) AS v FROM users u JOIN profiles p ON p.user_id = u.id
-         WHERE u.role = 'investor' AND p.verification_level = 'verified'`),
-      q(`SELECT COUNT(*) AS v FROM verification_requests
-         WHERE status = 'pending' AND verification_type = 'investor_registration'`),
-      q("SELECT COUNT(*) AS v FROM verification_requests WHERE status IN ('pending','under_review')"),
-      q("SELECT COUNT(*) AS v FROM reports WHERE status = 'pending'").catch(() => ({ v: 0 })),
-      q("SELECT COUNT(*) AS v FROM investments WHERE status IN ('pending','negotiating')"),
-      q("SELECT COUNT(*) AS v FROM investments WHERE status = 'accepted'"),
-      q("SELECT COUNT(*) AS v FROM investments WHERE status = 'rejected'"),
-      q("SELECT COUNT(*) AS v FROM posts"),
-      q(`SELECT COUNT(*) AS v FROM reports WHERE target_type = 'post' AND status = 'pending'`).catch(() => ({ v: 0 })),
-    ]);
-
-    return ok(res, {
-      stats: {
-        totalUsers:           totalUsers.v,
-        activeUsers:          activeUsers.v,
-        suspendedUsers:       suspendedUsers.v,
-        totalStartups:        totalStartups.v,
-        verifiedStartups:     verifiedStartups.v,
-        pendingStartups:      pendingStartups.v,
-        rejectedStartups:     rejectedStartups.v,
-        totalInvestors:       totalInvestors.v,
-        verifiedInvestors:    verifiedInvestors.v,
-        pendingInvestors:     pendingInvestors.v,
-        pendingVerifications: pendingVerifications.v,
-        pendingReports:       pendingReports.v,
-        activeOffers:         activeOffers.v,
-        acceptedOffers:       acceptedOffers.v,
-        rejectedOffers:       rejectedOffers.v,
-        totalPosts:           totalPosts.v,
-        reportedPosts:        reportedPosts.v,
-      },
-    });
+    const { getOrSet } = require("../utils/cache");
+    const stats = await getOrSet("admin_dashboard_stats", async () => {
+      const q = async (sql, p = []) => { const [[r]] = await db.execute(sql, p); return r; };
+      const [
+        totalUsers, activeUsers, suspendedUsers,
+        totalStartups, verifiedStartups, pendingStartups, rejectedStartups,
+        totalInvestors, verifiedInvestors, pendingInvestors,
+        pendingVerifications, pendingReports,
+        activeOffers, acceptedOffers, rejectedOffers,
+        totalPosts, reportedPosts,
+      ] = await Promise.all([
+        q("SELECT COUNT(*) AS v FROM users"),
+        q("SELECT COUNT(*) AS v FROM users WHERE status = 'active'"),
+        q("SELECT COUNT(*) AS v FROM users WHERE status = 'suspended'"),
+        q("SELECT COUNT(*) AS v FROM startups"),
+        q("SELECT COUNT(*) AS v FROM startups WHERE verification_status = 'verified'"),
+        q("SELECT COUNT(*) AS v FROM startups WHERE verification_status = 'pending'"),
+        q("SELECT COUNT(*) AS v FROM startups WHERE verification_status = 'rejected'"),
+        q("SELECT COUNT(*) AS v FROM users WHERE role = 'investor'"),
+        q(`SELECT COUNT(*) AS v FROM users u JOIN profiles p ON p.user_id = u.id
+           WHERE u.role = 'investor' AND p.verification_level = 'verified'`),
+        q(`SELECT COUNT(*) AS v FROM verification_requests
+           WHERE status = 'pending' AND verification_type = 'investor_registration'`),
+        q("SELECT COUNT(*) AS v FROM verification_requests WHERE status IN ('pending','under_review')"),
+        q("SELECT COUNT(*) AS v FROM reports WHERE status = 'pending'").catch(() => ({ v: 0 })),
+        q("SELECT COUNT(*) AS v FROM investments WHERE status IN ('pending','negotiating')"),
+        q("SELECT COUNT(*) AS v FROM investments WHERE status = 'accepted'"),
+        q("SELECT COUNT(*) AS v FROM investments WHERE status = 'rejected'"),
+        q("SELECT COUNT(*) AS v FROM posts"),
+        q(`SELECT COUNT(*) AS v FROM reports WHERE target_type = 'post' AND status = 'pending'`).catch(() => ({ v: 0 })),
+      ]);
+      return {
+        totalUsers: totalUsers.v, activeUsers: activeUsers.v, suspendedUsers: suspendedUsers.v,
+        totalStartups: totalStartups.v, verifiedStartups: verifiedStartups.v,
+        pendingStartups: pendingStartups.v, rejectedStartups: rejectedStartups.v,
+        totalInvestors: totalInvestors.v, verifiedInvestors: verifiedInvestors.v,
+        pendingInvestors: pendingInvestors.v, pendingVerifications: pendingVerifications.v,
+        pendingReports: pendingReports.v, activeOffers: activeOffers.v,
+        acceptedOffers: acceptedOffers.v, rejectedOffers: rejectedOffers.v,
+        totalPosts: totalPosts.v, reportedPosts: reportedPosts.v,
+      };
+    }, 60); // cache 60 seconds
+    return ok(res, { stats });
   } catch (err) {
     console.error("getDashboardStats:", err);
     return fail(res, "Failed to load stats.", 500);

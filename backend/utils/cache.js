@@ -1,13 +1,13 @@
-/**
+﻿/**
  * Lightweight in-memory TTL cache.
- * No external dependencies — suitable for single-instance deployments (Render free tier).
+ * No external dependencies â€” suitable for single-instance deployments (Render free tier).
  *
  * Usage:
  *   const { getOrSet, invalidate } = require("./cache");
  *   const data = await getOrSet("my_key", () => expensiveQuery(), 60); // 60s TTL
  */
 
-const store = new Map(); // key → { value, expiresAt }
+const store = new Map(); // key â†’ { value, expiresAt }
 
 /**
  * Get a cached value or compute and cache it.
@@ -51,4 +51,5 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
-module.exports = { getOrSet, invalidate, invalidatePrefix };
+module.exports = { getOrSet, invalidate };
+

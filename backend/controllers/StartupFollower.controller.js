@@ -66,9 +66,14 @@ async function getFollowers(req, res) {
 /* ── GET /api/startups/:startupId/follow/status ──── */
 async function getFollowStatus(req, res) {
   try {
-    const following = await StartupFollower.isFollowing(req.params.startupId, req.user.id);
-    const count     = await StartupFollower.countFollowers(req.params.startupId);
-    return res.json({ following, count });
+    const db = require("../config/database");
+    const [[row]] = await db.execute(
+      `SELECT COUNT(*) AS total,
+              MAX(CASE WHEN user_id = ? THEN 1 ELSE 0 END) AS is_following
+       FROM startup_followers WHERE startup_id = ?`,
+      [req.user.id, req.params.startupId]
+    );
+    return res.json({ following: row.is_following === 1, count: Number(row.total) });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

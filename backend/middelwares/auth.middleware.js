@@ -1,15 +1,15 @@
-/**
+﻿/**
  * Auth middleware
  *
- * requireAuth     — validates Bearer JWT + token_version check (instant revocation)
- * optionalAuth    — same but non-blocking
- * requireRole     — whitelist roles after auth
- * rejectSuspended — live DB status check; apply to ALL routes (GET and mutations)
+ * requireAuth     â€” validates Bearer JWT + token_version check (instant revocation)
+ * optionalAuth    â€” same but non-blocking
+ * requireRole     â€” whitelist roles after auth
+ * rejectSuspended â€” live DB status check; apply to ALL routes (GET and mutations)
  */
 const { verifyToken } = require("../utils/jwt");
 const db = require("../config/database");
 
-/* ── requireAuth ─────────────────────────────────── */
+/* â”€â”€ requireAuth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function requireAuth(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
@@ -20,7 +20,7 @@ async function requireAuth(req, res, next) {
     const token   = authHeader.split(" ")[1];
     const decoded = verifyToken(token); // throws on invalid/expired
 
-    // token_version check — instant revocation when admin suspends or user logs out all
+    // token_version check â€” instant revocation when admin suspends or user logs out all
     const [[row]] = await db.execute(
       "SELECT token_version, status FROM users WHERE id = ? LIMIT 1",
       [decoded.id]
@@ -47,7 +47,7 @@ async function requireAuth(req, res, next) {
   }
 }
 
-/* ── optionalAuth ────────────────────────────────── */
+/* â”€â”€ optionalAuth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function optionalAuth(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
@@ -67,7 +67,7 @@ async function optionalAuth(req, res, next) {
   next();
 }
 
-/* ── requireRole ─────────────────────────────────── */
+/* â”€â”€ requireRole â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function requireRole(roles) {
   const allowed = Array.isArray(roles) ? roles : [roles];
   return (req, res, next) => {
@@ -79,7 +79,7 @@ function requireRole(roles) {
 }
 
 /**
- * rejectSuspended — legacy middleware kept for explicit routes.
+ * rejectSuspended â€” legacy middleware kept for explicit routes.
  * Now requireAuth already checks suspended status on every call,
  * so this is only needed on routes that DON'T use requireAuth
  * but still need suspension enforcement.
@@ -105,4 +105,5 @@ async function rejectSuspended(req, res, next) {
   }
 }
 
-module.exports = { requireAuth, optionalAuth, requireRole, rejectSuspended };
+module.exports = { requireAuth, optionalAuth, requireRole };
+

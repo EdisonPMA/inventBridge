@@ -1,4 +1,4 @@
-const userModel = require("../models/Auth.model");
+﻿const userModel = require("../models/Auth.model");
 const User = require("../models/User.model");
 const db = require("../config/database");
 const {
@@ -7,7 +7,7 @@ const {
 } = require("../utils/jwt");
 const { verifyPassword, hashPassword } = require("../utils/password");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function userPayload(u) {
   return {
     id:                u.id,
@@ -23,13 +23,13 @@ function userPayload(u) {
   };
 }
 
-/* ── POST /api/auth/register ─────────────────────── */
+/* â”€â”€ POST /api/auth/register â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function createUser(req, res) {
   try {
     const { firstName, lastName, password, phone } = req.body;
     const email = String(req.body.email || "").trim().toLowerCase();
 
-    // Whitelist self-registration roles — never trust role from client
+    // Whitelist self-registration roles â€” never trust role from client
     const ALLOWED_ROLES = ["inventor", "investor", "organization"];
     const role = ALLOWED_ROLES.includes(req.body.role) ? req.body.role : "inventor";
 
@@ -57,7 +57,7 @@ async function createUser(req, res) {
   }
 }
 
-/* ── POST /api/auth/login ────────────────────────── */
+/* â”€â”€ POST /api/auth/login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function userLogin(req, res) {
   try {
     const email    = String(req.body.email || "").trim().toLowerCase();
@@ -103,7 +103,7 @@ async function userLogin(req, res) {
   }
 }
 
-/* ── POST /api/auth/refresh ──────────────────────── */
+/* â”€â”€ POST /api/auth/refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function refreshToken(req, res) {
   try {
     const { REFRESH_COOKIE } = require("../utils/jwt");
@@ -136,7 +136,7 @@ async function refreshToken(req, res) {
   }
 }
 
-/* ── POST /api/auth/logout ───────────────────────── */
+/* â”€â”€ POST /api/auth/logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function logout(req, res) {
   try {
     clearRefreshCookie(res);
@@ -156,11 +156,11 @@ async function logout(req, res) {
   }
 }
 
-/* ── Platform stats (public — for landing page) ── */
+/* â”€â”€ Platform stats (public â€” for landing page) â”€â”€ */
 const { getOrSet } = require("../utils/cache");
 async function getPlatformStats(req, res) {
   try {
-    // Cache for 5 minutes — these counters don't need to be real-time
+    // Cache for 5 minutes â€” these counters don't need to be real-time
     const stats = await getOrSet("platform_stats", () => userModel.getPlatformStats(), 300);
     return res.status(200).json({ stats });
   } catch {
@@ -168,7 +168,7 @@ async function getPlatformStats(req, res) {
   }
 }
 
-/* ── Public member directory ─────────────────────── */
+/* â”€â”€ Public member directory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getPublicDirectory(req, res) {
   try {
     const { role = "investor" } = req.query;
@@ -184,7 +184,7 @@ async function getPublicDirectory(req, res) {
   }
 }
 
-/* ── Success stories ─────────────────────────────── */
+/* â”€â”€ Success stories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getSuccessStories(req, res) {
   try {
     const [rows] = await db.execute(
@@ -218,7 +218,7 @@ async function getSuccessStories(req, res) {
   }
 }
 
-/* ── Legacy admin routes (kept for compatibility) ── */
+/* â”€â”€ Legacy admin routes (kept for compatibility) â”€â”€ */
 async function getUsers(req, res) {
   try { return res.status(200).json({ users: await userModel.getUsers() }); }
   catch (error) { return res.status(500).json({ message: error.message }); }
@@ -252,3 +252,4 @@ module.exports = {
   getPlatformStats, getPublicDirectory, getSuccessStories,
   getUsers, getUserById, updateUser, updatePassword, deleteUser,
 };
+

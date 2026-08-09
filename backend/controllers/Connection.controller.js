@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Connection controller
- * Uses JWT for all identity — never trusts sender_id from the request body.
+ * Uses JWT for all identity â€” never trusts sender_id from the request body.
  */
 const Connection   = require("../models/Connection.model");
 const Notification = require("../models/Notification.model");
@@ -16,7 +16,7 @@ function invalidatePresenceBoth(idA, idB) {
   } catch { /* non-critical */ }
 }
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function mapConn(conn, myId) {
   const isSender = conn.sender_id === myId;
   return {
@@ -44,7 +44,7 @@ function mapConn(conn, myId) {
   };
 }
 
-/* ── POST /api/connections ───────────────────────── */
+/* â”€â”€ POST /api/connections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function sendRequest(req, res) {
   try {
     const senderId   = req.user.id;
@@ -68,7 +68,7 @@ async function sendRequest(req, res) {
 
     const connection = await Connection.send(senderId, receiverId);
 
-    // Notify receiver — fire-and-forget
+    // Notify receiver â€” fire-and-forget
     db.execute(
       `SELECT p.first_name, p.last_name FROM profiles p WHERE p.user_id = ? LIMIT 1`,
       [req.user.id]
@@ -98,7 +98,7 @@ async function sendRequest(req, res) {
   }
 }
 
-/* ── GET /api/connections ────────────────────────── */
+/* â”€â”€ GET /api/connections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyConnections(req, res) {
   try {
     const { status = "accepted" } = req.query;
@@ -112,7 +112,7 @@ async function getMyConnections(req, res) {
   }
 }
 
-/* ── GET /api/connections/pending  (received) ────── */
+/* â”€â”€ GET /api/connections/pending  (received) â”€â”€â”€â”€â”€â”€ */
 async function getPendingRequests(req, res) {
   try {
     const myId       = req.user.id;
@@ -125,7 +125,7 @@ async function getPendingRequests(req, res) {
   }
 }
 
-/* ── GET /api/connections/sent ───────────────────── */
+/* â”€â”€ GET /api/connections/sent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getSentRequests(req, res) {
   try {
     const myId       = req.user.id;
@@ -138,7 +138,7 @@ async function getSentRequests(req, res) {
   }
 }
 
-/* ── GET /api/connections/between/:userId ────────── */
+/* â”€â”€ GET /api/connections/between/:userId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getConnectionBetween(req, res) {
   try {
     const connection = await Connection.findBetween(req.user.id, req.params.userId);
@@ -149,7 +149,7 @@ async function getConnectionBetween(req, res) {
   }
 }
 
-/* ── PATCH /api/connections/:id/accept ───────────── */
+/* â”€â”€ PATCH /api/connections/:id/accept â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function acceptRequest(req, res) {
   try {
     const conn = await Connection.findById(req.params.id);
@@ -190,7 +190,7 @@ async function acceptRequest(req, res) {
   }
 }
 
-/* ── PATCH /api/connections/:id/reject ───────────── */
+/* â”€â”€ PATCH /api/connections/:id/reject â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function rejectRequest(req, res) {
   try {
     const conn = await Connection.findById(req.params.id);
@@ -212,7 +212,7 @@ async function rejectRequest(req, res) {
   }
 }
 
-/* ── DELETE /api/connections/:id/request  (cancel) ─ */
+/* â”€â”€ DELETE /api/connections/:id/request  (cancel) â”€ */
 async function cancelRequest(req, res) {
   try {
     const conn = await Connection.findById(req.params.id);
@@ -230,7 +230,7 @@ async function cancelRequest(req, res) {
   }
 }
 
-/* ── DELETE /api/connections/:id  (remove accepted) */
+/* â”€â”€ DELETE /api/connections/:id  (remove accepted) */
 async function removeConnection(req, res) {
   try {
     const conn = await Connection.findById(req.params.id);
@@ -247,7 +247,7 @@ async function removeConnection(req, res) {
   }
 }
 
-/* ── Legacy: PUT /api/connections/:id ────────────── */
+/* â”€â”€ Legacy: PUT /api/connections/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateConnectionStatus(req, res) {
   try {
     const { status } = req.body;
@@ -290,3 +290,4 @@ module.exports = {
   removeConnection,
   updateConnectionStatus,
 };
+
