@@ -1,3 +1,4 @@
+// v2 — trust proxy, boolean SQL fixes, dead code removed
 // ── Global process error handlers ─────────────────
 process.on("unhandledRejection", (reason) => {
   console.error("[FATAL] Unhandled rejection:", reason);
