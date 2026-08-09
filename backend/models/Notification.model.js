@@ -41,11 +41,14 @@ async function findByUser(user_id, { is_read, type, limit = 30, offset = 0 } = {
   if (type)                  { conditions.push("type = ?");    params.push(type); }
 
   const where = `WHERE ${conditions.join(" AND ")}`;
+  // Ensure integers — mysql2 on TiDB Cloud rejects string LIMIT/OFFSET
+  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 30, 1), 100);
+  const safeOffset = Math.max(parseInt(offset) || 0, 0);
 
   const [rows] = await db.execute(
     `SELECT * FROM notifications ${where}
      ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [...params, limit, offset]
+    [...params, safeLimit, safeOffset]
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM notifications ${where}`, params

@@ -87,7 +87,13 @@ async function weeklyChart(startupIds) {
     );
 
     // Fill all 7 days including days with zero views
-    const map = new Map(rows.map((r) => [r.date.toISOString().slice(0, 10), Number(r.views)]));
+    // TiDB/MySQL may return date as string "YYYY-MM-DD" or Date object — normalise both
+    const map = new Map(rows.map((r) => {
+      const dateStr = r.date instanceof Date
+        ? r.date.toISOString().slice(0, 10)
+        : String(r.date).slice(0, 10);
+      return [dateStr, Number(r.views)];
+    }));
     return buildEmptyWeek().map((day) => ({
       ...day,
       views: map.get(day.date) ?? 0,

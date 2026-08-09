@@ -95,6 +95,8 @@ async function findAll({ user_id, startup_id, visibility, search, limit = 20, of
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 20, 1), 100);
+  const safeOffset = Math.max(parseInt(offset) || 0, 0);
 
   const [rows] = await db.execute(
     `SELECT ${WITH_AUTHOR}
@@ -105,7 +107,7 @@ async function findAll({ user_id, startup_id, visibility, search, limit = 20, of
      ${where}
      ORDER BY po.created_at DESC
      LIMIT ? OFFSET ?`,
-    [...params, limit, offset]
+    [...params, safeLimit, safeOffset]
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM posts po ${where}`, params
@@ -128,6 +130,27 @@ async function feed({ limit = 20, offset = 0 } = {}) {
  * Personalised feed for an authenticated viewer.
  */
 async function personalFeed(viewer_id, { limit = 20, offset = 0 } = {}) {
+  // Ensure integers for LIMIT/OFFSET
+  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 20, 1), 50);
+  const safeOffset = Math.max(parseInt(offset) || 0, 0);
+
+  const feedWhere = `
+    WHERE po.visibility = 'public'
+       OR (
+         po.visibility = 'connections'
+         AND po.user_id IN (
+           SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END
+           FROM connections
+           WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'
+         )
+       )
+       OR (
+         po.startup_id IS NOT NULL
+         AND po.startup_id IN (
+           SELECT startup_id FROM startup_followers WHERE user_id = ?
+         )
+       )`;
+
   const [rows] = await db.execute(
     `SELECT ${WITH_AUTHOR},
             EXISTS(SELECT 1 FROM post_likes vl WHERE vl.post_id = po.id AND vl.user_id = ?) AS viewer_liked
@@ -135,44 +158,15 @@ async function personalFeed(viewer_id, { limit = 20, offset = 0 } = {}) {
      JOIN users u ON u.id = po.user_id
      LEFT JOIN profiles p ON p.user_id = po.user_id
      LEFT JOIN startups s ON s.id = po.startup_id
-     WHERE po.visibility = 'public'
-        OR (
-          po.visibility = 'connections'
-          AND po.user_id IN (
-            SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END
-            FROM connections
-            WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'
-          )
-        )
-        OR (
-          po.startup_id IS NOT NULL
-          AND po.startup_id IN (
-            SELECT startup_id FROM startup_followers WHERE user_id = ?
-          )
-        )
+     ${feedWhere}
      ORDER BY po.created_at DESC
      LIMIT ? OFFSET ?`,
-    [viewer_id, viewer_id, viewer_id, viewer_id, viewer_id, limit, offset]
+    [viewer_id, viewer_id, viewer_id, viewer_id, viewer_id, safeLimit, safeOffset]
   );
 
+  // COUNT in a subquery to avoid repeating the complex WHERE
   const [[{ total }]] = await db.execute(
-    `SELECT COUNT(*) AS total
-     FROM posts po
-     WHERE po.visibility = 'public'
-        OR (
-          po.visibility = 'connections'
-          AND po.user_id IN (
-            SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END
-            FROM connections
-            WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'
-          )
-        )
-        OR (
-          po.startup_id IS NOT NULL
-          AND po.startup_id IN (
-            SELECT startup_id FROM startup_followers WHERE user_id = ?
-          )
-        )`,
+    `SELECT COUNT(*) AS total FROM posts po ${feedWhere}`,
     [viewer_id, viewer_id, viewer_id, viewer_id]
   );
 

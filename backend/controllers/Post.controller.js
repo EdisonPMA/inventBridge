@@ -78,8 +78,8 @@ async function createPost(req, res) {
 async function getFeed(req, res) {
   try {
     const { user_id, startup_id, search, page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 50);
-    const safePage   = Math.max(parseInt(page) || 1, 1);
+    const safeLimit  = Math.min(Math.max(parseInt(limit)  || 20, 1), 50);
+    const safePage   = Math.max(parseInt(page)   || 1, 1);
     const safeOffset = (safePage - 1) * safeLimit;
 
     // If search query is provided, skip personalised feed and search directly
@@ -91,7 +91,8 @@ async function getFeed(req, res) {
       return res.json({
         success: true,
         posts: result.rows,
-        pagination: { page: safePage, limit: safeLimit, total: result.total },
+        data: result.rows,
+        pagination: { page: safePage, limit: safeLimit, total: result.total, totalPages: Math.ceil(result.total / safeLimit) },
       });
     }
 
@@ -118,15 +119,17 @@ async function getFeed(req, res) {
 
     return res.json({
       success: true,
-      data: result.rows,
+      posts: result.rows,   // some frontend components use posts
+      data:  result.rows,   // some use data
       pagination: {
-        page: safePage,
-        limit: safeLimit,
-        total: result.total,
+        page:       safePage,
+        limit:      safeLimit,
+        total:      result.total,
         totalPages: Math.ceil(result.total / safeLimit),
       },
     });
   } catch (err) {
+    console.error("[getFeed]", err.message);
     return res.status(500).json({ message: err.message });
   }
 }

@@ -17,7 +17,13 @@ const onlineUsers = new Map();
 function createSocketServer(httpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin:      process.env.CLIENT_ORIGIN || "http://localhost:5173",
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const allowed = (process.env.CLIENT_ORIGIN || process.env.CLIENT_URL || "http://localhost:5173")
+          .split(",").map(o => o.trim());
+        if (allowed.includes(origin)) return callback(null, true);
+        callback(new Error(`Socket CORS: origin '${origin}' not allowed`));
+      },
       credentials: true,
     },
     transports: ["websocket", "polling"],
