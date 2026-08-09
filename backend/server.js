@@ -46,6 +46,12 @@ const aiRoutes           = require("./routes/AI.route");
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// ── Trust Render's reverse proxy ───────────────────
+// Render (and most PaaS) sit behind a proxy that sets X-Forwarded-For.
+// Without this, express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+// and crashes every request. '1' means trust one hop of proxy.
+app.set("trust proxy", 1);
+
 // ── Allowed origins (supports comma-separated list in CLIENT_ORIGIN) ──
 const allowedOrigins = (process.env.CLIENT_ORIGIN || process.env.CLIENT_URL || "http://localhost:5173")
   .split(",")
