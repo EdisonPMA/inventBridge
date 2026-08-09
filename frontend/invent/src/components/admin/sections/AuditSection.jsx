@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
 import { adminGetAuditLogs } from "../../../services/adminApi";
 import { Skel, Badge, Pager, TH } from "../adminShared";
@@ -15,7 +15,7 @@ export default function AuditSection() {
   useEffect(() => { load(); }, [load]);
 
   function fmt(details) {
-    if (!details) return "—";
+    if (!details) return "â€”";
     try { const d = JSON.parse(details); return d.reason || JSON.stringify(d); } catch { return details; }
   }
 
@@ -52,3 +52,4 @@ export default function AuditSection() {
     </div>
   );
 }
+

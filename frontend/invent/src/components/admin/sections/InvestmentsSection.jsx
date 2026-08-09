@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
 import { adminListInvestments, adminSuspendInvestment } from "../../../services/adminApi";
 import { Skel, Badge, Pager, TH, Dlg, sv } from "../adminShared";
@@ -62,3 +62,4 @@ export default function InvestmentsSection() {
     </div>
   );
 }
+

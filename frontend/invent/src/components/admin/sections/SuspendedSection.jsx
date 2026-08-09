@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
 import { adminListSuspended } from "../../../services/adminApi";
 import api from "../../../services/api";
@@ -53,3 +53,4 @@ export default function SuspendedSection() {
     </div>
   );
 }
+

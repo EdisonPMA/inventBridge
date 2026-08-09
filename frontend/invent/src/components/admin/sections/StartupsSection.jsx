@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { Search, RefreshCw } from "lucide-react";
 import { adminListStartups, adminSetStartupStatus } from "../../../services/adminApi";
 import { Skel, Badge, Pager, TH, Dlg, sv } from "../adminShared";
@@ -23,7 +23,7 @@ export default function StartupsSection() {
       <div className="flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={e => { setSrch(e.target.value); setP(1); }} placeholder="Search startup…"
+          <input value={search} onChange={e => { setSrch(e.target.value); setP(1); }} placeholder="Search startupâ€¦"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm focus:outline-none focus:border-blue-400" />
         </div>
         <select value={verif} onChange={e => { setVerif(e.target.value); setP(1); }}
@@ -46,8 +46,8 @@ export default function StartupsSection() {
                   <tr key={s.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-medium text-slate-800 max-w-[140px] truncate">{s.name}</td>
                     <td className="px-4 py-3 text-xs text-slate-500">{s.owner_first} {s.owner_last || ""}</td>
-                    <td className="px-4 py-3 text-xs text-slate-500">{s.industry || "—"}</td>
-                    <td className="px-4 py-3 text-xs text-slate-500">{s.stage || "—"}</td>
+                    <td className="px-4 py-3 text-xs text-slate-500">{s.industry || "â€”"}</td>
+                    <td className="px-4 py-3 text-xs text-slate-500">{s.stage || "â€”"}</td>
                     <td className="px-4 py-3"><Badge label={s.verification_status} variant={sv(s.verification_status)} /></td>
                     <td className="px-4 py-3"><Badge label={s.status} variant={sv(s.status)} /></td>
                     <td className="px-4 py-3">
@@ -74,3 +74,4 @@ export default function StartupsSection() {
     </div>
   );
 }
+

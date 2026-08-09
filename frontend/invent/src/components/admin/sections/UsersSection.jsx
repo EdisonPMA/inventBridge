@@ -10,12 +10,20 @@ export default function UsersSection() {
   const [status,    setStatus] = useState("");
   const [page,      setPage]   = useState(1);
   const [loading,   setL]      = useState(true);
+  const [error,     setError]  = useState(null);
   const [confirm,   setC]      = useState(null);
-  const [roleModal, setRoleModal] = useState(null); // replaces window.prompt
+  const [roleModal, setRoleModal] = useState(null);
 
   const load = useCallback(async () => {
     setL(true);
-    try { setData(await adminListUsers({ search, role, status, page })); } catch { /**/ } finally { setL(false); }
+    setError(null);
+    try {
+      setData(await adminListUsers({ search, role, status, page }));
+    } catch (err) {
+      setError(err?.message || "Failed to load users. Please try again.");
+    } finally {
+      setL(false);
+    }
   }, [search, role, status, page]);
   useEffect(() => { load(); }, [load]);
 
@@ -57,7 +65,12 @@ export default function UsersSection() {
       </div>
 
       <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-        {loading ? <div className="p-4 space-y-2">{Array(5).fill(0).map((_, i) => <Skel key={i} h="h-10" />)}</div> : (
+        {loading ? <div className="p-4 space-y-2">{Array(5).fill(0).map((_, i) => <Skel key={i} h="h-10" />)}</div> : error ? (
+          <div className="py-12 text-center">
+            <p className="text-sm text-red-500 mb-2">{error}</p>
+            <button onClick={load} className="text-xs text-blue-500 hover:underline">Retry</button>
+          </div>
+        ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[700px]">
               <TH cols={["Name","Email","Role","Status","Joined","Actions"]} />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
 import { adminListReports, adminUpdateReport } from "../../../services/adminApi";
 import { Skel, Badge, Pager, Dlg, sv } from "../adminShared";
@@ -43,7 +43,7 @@ export default function ReportsSection() {
                     <Badge label={r.status} variant={sv(r.status)} />
                   </div>
                   <p className="text-sm text-slate-700">{r.description || <em className="text-slate-400">No description.</em>}</p>
-                  <p className="mt-1 text-xs text-slate-400">By: {r.reporter_first} {r.reporter_last} · Target #{r.target_id} · {new Date(r.created_at).toLocaleString()}</p>
+                  <p className="mt-1 text-xs text-slate-400">By: {r.reporter_first} {r.reporter_last} Â· Target #{r.target_id} Â· {new Date(r.created_at).toLocaleString()}</p>
                 </div>
                 {["pending","under_review"].includes(r.status) && (
                   <div className="flex flex-col gap-1.5 shrink-0">
@@ -64,3 +64,4 @@ export default function ReportsSection() {
     </div>
   );
 }
+

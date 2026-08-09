@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, AlertCircle, Tag } from "lucide-react";
 import api from "../../../services/api";
 import { Skel, Badge } from "../adminShared";
@@ -60,12 +60,12 @@ export default function CategoriesSection() {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">Description</label>
-                <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2} placeholder="Short description…"
+                <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2} placeholder="Short descriptionâ€¦"
                   className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">Icon name / emoji</label>
-                <input value={icon} onChange={e => setIcon(e.target.value)} placeholder="e.g. 💳 or chart-bar"
+                <input value={icon} onChange={e => setIcon(e.target.value)} placeholder="e.g. ðŸ’³ or chart-bar"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none" />
               </div>
               {modal.mode === "edit" && (
@@ -85,7 +85,7 @@ export default function CategoriesSection() {
                 className="flex-1 rounded-xl border border-slate-200 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">Cancel</button>
               <button onClick={handleSave} disabled={saving || !name.trim()}
                 className="flex-1 rounded-xl bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition">
-                {saving ? "Saving…" : modal.mode === "add" ? "Add Category" : "Save Changes"}
+                {saving ? "Savingâ€¦" : modal.mode === "add" ? "Add Category" : "Save Changes"}
               </button>
             </div>
           </div>
@@ -138,16 +138,16 @@ export default function CategoriesSection() {
               <tbody className="divide-y divide-slate-50">
                 {categories.map(cat => (
                   <tr key={cat.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-lg">{cat.icon || <span className="text-slate-300 text-xs">—</span>}</td>
+                    <td className="px-4 py-3 text-lg">{cat.icon || <span className="text-slate-300 text-xs">â€”</span>}</td>
                     <td className="px-4 py-3 font-medium text-slate-800">{cat.name}</td>
-                    <td className="px-4 py-3 text-xs text-slate-500 max-w-[220px] truncate">{cat.description || <span className="text-slate-300">—</span>}</td>
+                    <td className="px-4 py-3 text-xs text-slate-500 max-w-[220px] truncate">{cat.description || <span className="text-slate-300">â€”</span>}</td>
                     <td className="px-4 py-3 text-slate-700">{cat.startup_count ?? 0}</td>
                     <td className="px-4 py-3"><Badge label={cat.status} variant={cat.status === "active" ? "success" : "default"} /></td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1.5">
                         <button onClick={() => openEdit(cat)} className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-200 transition">Edit</button>
                         <button onClick={() => setConfirm(cat)} disabled={(cat.startup_count ?? 0) > 0}
-                          title={(cat.startup_count ?? 0) > 0 ? "Cannot delete — has startups" : "Delete category"}
+                          title={(cat.startup_count ?? 0) > 0 ? "Cannot delete â€” has startups" : "Delete category"}
                           className="rounded-lg bg-red-50 px-2.5 py-1 text-xs text-red-600 hover:bg-red-100 disabled:opacity-40 transition">Delete</button>
                       </div>
                     </td>
@@ -162,3 +162,4 @@ export default function CategoriesSection() {
     </div>
   );
 }
+

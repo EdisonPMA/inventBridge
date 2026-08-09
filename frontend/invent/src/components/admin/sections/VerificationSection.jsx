@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, AlertCircle, ChevronUp, Eye, X, CheckCircle, ExternalLink, FileCheck, ShieldCheck } from "lucide-react";
 import { adminGetStartupDetail } from "../../../services/adminApi";
 import { adminApproveVerification, adminRejectVerification, adminStartReview } from "../../../services/verificationApi";
 import api from "../../../services/api";
 import { Skel, Pager } from "../adminShared";
 
-/* ── StartupDetailPanel ──────────────────────────── */
+/* â”€â”€ StartupDetailPanel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onReject, onClose }) {
   const [detail,  setDetail]  = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,8 +50,8 @@ function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onR
   const certFile  = files.find(f => f.file_type === "registration_certificate")
     || (s.registration_certificate_url ? { cloud_url: s.registration_certificate_url } : null);
   const mediaFiles = files.filter(f => ["pitch_deck","demo_video"].includes(f.file_type));
-  const fmt   = v => v ? String(v).replace(/_/g," ") : "—";
-  const money = v => Number(v) > 0 ? `$${Number(v).toLocaleString()}` : "—";
+  const fmt   = v => v ? String(v).replace(/_/g," ") : "â€”";
+  const money = v => Number(v) > 0 ? `$${Number(v).toLocaleString()}` : "â€”";
 
   return (
     <div className="space-y-5">
@@ -62,7 +62,7 @@ function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onR
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900">{s.name}</h3>
-            <p className="text-xs text-slate-500">{s.industry||s.category_name||"—"} · {s.stage||"—"} · {s.country||"—"}</p>
+            <p className="text-xs text-slate-500">{s.industry||s.category_name||"â€”"} Â· {s.stage||"â€”"} Â· {s.country||"â€”"}</p>
           </div>
         </div>
         <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"><X className="h-4 w-4"/></button>
@@ -127,7 +127,7 @@ function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onR
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-slate-800 truncate">{m.name}</p>
-                      <p className="text-xs text-slate-500">{m.position||"Member"}{m.ownership_percentage>0?` · ${m.ownership_percentage}%`:""}</p>
+                      <p className="text-xs text-slate-500">{m.position||"Member"}{m.ownership_percentage>0?` Â· ${m.ownership_percentage}%`:""}</p>
                     </div>
                   </div>
                 ))}
@@ -171,7 +171,7 @@ function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onR
                         h.status==="approved"?"bg-emerald-50 text-emerald-700":h.status==="rejected"?"bg-red-50 text-red-600":h.status==="under_review"?"bg-blue-50 text-blue-700":"bg-amber-50 text-amber-700"
                       }`}>{fmt(h.status)}</span>
                       <span className="text-xs text-slate-400">{new Date(h.created_at).toLocaleDateString()}</span>
-                      {h.reviewer_first && <span className="text-xs text-slate-400">· {h.reviewer_first} {h.reviewer_last||""}</span>}
+                      {h.reviewer_first && <span className="text-xs text-slate-400">Â· {h.reviewer_first} {h.reviewer_last||""}</span>}
                     </div>
                     {h.remarks && <p className="mt-0.5 text-xs italic text-slate-500">"{h.remarks}"</p>}
                   </div>
@@ -203,18 +203,18 @@ function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onR
 
       {mode && (
         <div className={`rounded-2xl border p-4 space-y-3 ${mode==="approve"?"border-emerald-100 bg-emerald-50":"border-red-100 bg-red-50"}`}>
-          <p className="text-sm font-semibold text-slate-800">{mode==="approve"?"✅ Confirm Approval":"❌ Confirm Rejection"}</p>
+          <p className="text-sm font-semibold text-slate-800">{mode==="approve"?"âœ… Confirm Approval":"âŒ Confirm Rejection"}</p>
           <textarea value={remarks} onChange={e => setRemarks(e.target.value)} rows={3}
-            placeholder={mode==="approve"?"Optional note for the founder…":"Rejection reason (required, visible to founder)…"}
+            placeholder={mode==="approve"?"Optional note for the founderâ€¦":"Rejection reason (required, visible to founder)â€¦"}
             className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"/>
           {actErr && <p className="text-xs text-red-600">{actErr}</p>}
           <div className="flex gap-2">
             {mode==="approve"
               ? <button onClick={doApprove} disabled={acting} className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 transition">
-                  {acting ? <RefreshCw className="h-4 w-4 animate-spin"/> : <CheckCircle className="h-4 w-4"/>}{acting?"Approving…":"Confirm Approve"}
+                  {acting ? <RefreshCw className="h-4 w-4 animate-spin"/> : <CheckCircle className="h-4 w-4"/>}{acting?"Approvingâ€¦":"Confirm Approve"}
                 </button>
               : <button onClick={doReject} disabled={acting||!remarks.trim()} className="flex items-center gap-1.5 rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50 transition">
-                  {acting ? <RefreshCw className="h-4 w-4 animate-spin"/> : <X className="h-4 w-4"/>}{acting?"Rejecting…":"Confirm Reject"}
+                  {acting ? <RefreshCw className="h-4 w-4 animate-spin"/> : <X className="h-4 w-4"/>}{acting?"Rejectingâ€¦":"Confirm Reject"}
                 </button>}
             <button onClick={() => { setMode(null); setActErr(""); }} className="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">Cancel</button>
           </div>
@@ -224,7 +224,7 @@ function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onR
   );
 }
 
-/* ── VerificationSection ─────────────────────────── */
+/* â”€â”€ VerificationSection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function VerificationSection() {
   const [data,       setData]      = useState({ rows: [], total: 0 });
   const [status,     setS]         = useState("pending");
@@ -266,7 +266,7 @@ export default function VerificationSection() {
       </div>
       {actionOk && (
         <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          <span>✅ {actionOk}</span>
+          <span>âœ… {actionOk}</span>
           <button onClick={() => setActionOk("")}><X className="h-4 w-4" /></button>
         </div>
       )}
@@ -320,7 +320,7 @@ export default function VerificationSection() {
                       }`}>{v.status.replace(/_/g," ")}</span>
                       {canAct && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Action needed</span>}
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{v.email} · {new Date(v.created_at).toLocaleDateString()}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{v.email} Â· {new Date(v.created_at).toLocaleDateString()}</p>
                   </div>
                   <button onClick={() => setExpanded(isOpen ? null : v.id)}
                     className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition ${isOpen ? "bg-blue-600 text-white" : "border border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
@@ -355,7 +355,7 @@ export default function VerificationSection() {
                           className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100">Reject</button>
                       </div>
                     )}
-                    <button onClick={() => setExpanded(null)} className="text-xs text-slate-400 hover:text-slate-600">Close ↑</button>
+                    <button onClick={() => setExpanded(null)} className="text-xs text-slate-400 hover:text-slate-600">Close â†‘</button>
                   </div>
                 )}
               </div>
@@ -367,3 +367,4 @@ export default function VerificationSection() {
     </div>
   );
 }
+

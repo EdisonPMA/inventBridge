@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { Search, RefreshCw } from "lucide-react";
 import { adminListPosts, adminSetPostStatus } from "../../../services/adminApi";
 import { Skel, Badge, Pager, Dlg } from "../adminShared";
@@ -22,7 +22,7 @@ export default function PostsSection() {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={e => { setSrch(e.target.value); setP(1); }} placeholder="Search post content…"
+          <input value={search} onChange={e => { setSrch(e.target.value); setP(1); }} placeholder="Search post contentâ€¦"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm focus:outline-none focus:border-blue-400" />
         </div>
         <button onClick={load} className="rounded-xl border border-slate-200 px-3 py-2 text-slate-500 hover:bg-slate-50">
@@ -39,7 +39,7 @@ export default function PostsSection() {
                   <p className="text-sm font-semibold text-slate-800">{p.first_name} {p.last_name || ""}</p>
                   <p className="text-sm text-slate-600 mt-1 line-clamp-2">{p.content}</p>
                   <div className="mt-1 flex gap-3 text-xs text-slate-400">
-                    <span>👍 {p.like_count}</span><span>💬 {p.comment_count}</span>
+                    <span>ðŸ‘ {p.like_count}</span><span>ðŸ’¬ {p.comment_count}</span>
                     <Badge label={p.visibility} />
                     <span>{new Date(p.created_at).toLocaleDateString()}</span>
                   </div>
@@ -61,3 +61,4 @@ export default function PostsSection() {
     </div>
   );
 }
+

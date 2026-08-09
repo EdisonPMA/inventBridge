@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { Search, RefreshCw } from "lucide-react";
 import { adminListInvestors } from "../../../services/adminApi";
 import api from "../../../services/api";
@@ -23,7 +23,7 @@ export default function InvestorsSection() {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={e => { setSrch(e.target.value); setP(1); }} placeholder="Search investor…"
+          <input value={search} onChange={e => { setSrch(e.target.value); setP(1); }} placeholder="Search investorâ€¦"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm focus:outline-none focus:border-blue-400" />
         </div>
         <button onClick={load} className="rounded-xl border border-slate-200 px-3 py-2 text-slate-500 hover:bg-slate-50">
@@ -68,3 +68,4 @@ export default function InvestorsSection() {
     </div>
   );
 }
+

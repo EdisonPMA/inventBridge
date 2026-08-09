@@ -1,4 +1,4 @@
-import { RefreshCw, AlertCircle, Users, CheckCircle, UserX, Lightbulb, ShieldCheck, Clock, Flag, TrendingUp } from "lucide-react";
+﻿import { RefreshCw, AlertCircle, Users, CheckCircle, UserX, Lightbulb, ShieldCheck, Clock, Flag, TrendingUp } from "lucide-react";
 import StatCard from "../../dashboard/StatCard";
 import ChartCard from "../../dashboard/ChartCard";
 import { useApi } from "../../../hooks/useApi";
@@ -49,8 +49,8 @@ export default function OverviewSection() {
             type="bar" color="#2563eb" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-1">
             {[
-              { label: "Investors",        val: `${stats.totalInvestors ?? 0}`,  sub: `Verified: ${stats.verifiedInvestors ?? 0} · Pending: ${stats.pendingInvestors ?? 0}` },
-              { label: "Investment Offers", val: `${stats.activeOffers ?? 0}`,   sub: `Accepted: ${stats.acceptedOffers ?? 0} · Rejected: ${stats.rejectedOffers ?? 0}` },
+              { label: "Investors",        val: `${stats.totalInvestors ?? 0}`,  sub: `Verified: ${stats.verifiedInvestors ?? 0} Â· Pending: ${stats.pendingInvestors ?? 0}` },
+              { label: "Investment Offers", val: `${stats.activeOffers ?? 0}`,   sub: `Accepted: ${stats.acceptedOffers ?? 0} Â· Rejected: ${stats.rejectedOffers ?? 0}` },
               { label: "Posts",            val: `${stats.totalPosts ?? 0}`,      sub: `Reported: ${stats.reportedPosts ?? 0}` },
             ].map(c => (
               <div key={c.label} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
@@ -65,3 +65,4 @@ export default function OverviewSection() {
     </div>
   );
 }
+
