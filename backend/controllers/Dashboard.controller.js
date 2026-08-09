@@ -164,7 +164,7 @@ async function inventorDashboard(req, res) {
     });
   } catch (err) {
     console.error("inventorDashboard error:", err);
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: "Could not load dashboard." });
   }
 }
 
@@ -351,7 +351,7 @@ async function investorDashboard(req, res) {
     });
   } catch (err) {
     console.error("investorDashboard error:", err);
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: "Could not load dashboard." });
   }
 }
 
@@ -367,17 +367,24 @@ async function organizationDashboard(req, res) {
       connectionCount,
       recentStartups,
     ] = await Promise.all([
+      // Scoped to verification requests submitted by connected users only
+      // (orgs review startups/investors they're connected with, not all platform data)
       q(
         `SELECT vr.id, vr.verification_type, vr.status, vr.created_at,
-                p.first_name, p.last_name, u.email,
+                p.first_name, p.last_name,
                 s.name AS startup_name, s.industry, s.stage
          FROM verification_requests vr
          JOIN users u ON u.id = vr.user_id
          LEFT JOIN profiles p ON p.user_id = vr.user_id
          LEFT JOIN startups s ON s.id = vr.startup_id
+         WHERE vr.user_id IN (
+           SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END
+           FROM connections
+           WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'
+         )
          ORDER BY vr.created_at DESC
          LIMIT 20`,
-        []
+        [userId, userId, userId]
       ),
       one(
         `SELECT COUNT(*) AS total FROM connections
@@ -448,7 +455,7 @@ async function organizationDashboard(req, res) {
     });
   } catch (err) {
     console.error("organizationDashboard error:", err);
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: "Could not load dashboard." });
   }
 }
 
@@ -537,7 +544,7 @@ async function adminDashboard(req, res) {
     });
   } catch (err) {
     console.error("adminDashboard error:", err);
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: "Could not load dashboard." });
   }
 }
 

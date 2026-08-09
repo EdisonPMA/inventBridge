@@ -123,6 +123,8 @@ function registerMessageHandlers(socket, io, onlineUsers) {
   socket.on("delete_message", async ({ conversationId, messageId }, cb) => {
     try {
       const msg = await Message.findById(messageId);
+      // Verify message belongs to this conversation (prevents cross-conversation deletion)
+      if (msg.conversation_id !== parseInt(conversationId)) throw new Error("Not authorized.");
       if (msg.sender_id !== userId && socket.userRole !== "admin") throw new Error("Not authorized.");
       const deleted = await Message.softDelete(messageId);
       io.to(`conversation:${conversationId}`).emit("message_deleted", {

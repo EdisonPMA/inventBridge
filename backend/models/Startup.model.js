@@ -239,14 +239,29 @@ async function remove(id) {
   return { message: "Startup deleted." };
 }
 
+// ── 1. Whitelisted sort map — never interpolate raw strings from callers ──
+const ALLOWED_SORTS = {
+  newest:       "s.created_at DESC",
+  oldest:       "s.created_at ASC",
+  funding_low:  "s.funding_required ASC",
+  funding_high: "s.funding_required DESC",
+  ai_score:     "s.ai_score DESC",
+  name:         "s.name ASC",
+};
+
 /* ── DISCOVER (investor-facing, published + verified first) ─────── */
 async function discover({
   q, category_id, industry, stage,
   country, province, district,
   minFunding, maxFunding, verificationStatus,
-  orderBy = "s.created_at DESC",
+  orderBy = "newest",
   limit = 12, offset = 0,
 } = {}) {
+  // Whitelist sort — NEVER interpolate raw SQL from callers
+  const safeOrder = ALLOWED_SORTS[orderBy] || ALLOWED_SORTS.newest;
+  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 12, 1), 50);
+  const safeOffset = Math.max(parseInt(offset) || 0, 0);
+
   // Always restrict to published startups for discovery
   const conditions = ["s.status = 'published'"];
   const params = [];
@@ -288,9 +303,9 @@ async function discover({
      LEFT JOIN users u ON u.id = s.owner_id
      LEFT JOIN profiles p ON p.user_id = s.owner_id
      ${where}
-     ORDER BY ${orderBy}
+     ORDER BY ${safeOrder}
      LIMIT ? OFFSET ?`,
-    [...params, limit, offset]
+    [...params, safeLimit, safeOffset]
   );
 
   const [[{ total }]] = await db.execute(

@@ -1,3 +1,12 @@
+// ── Global process error handlers ─────────────────
+process.on("unhandledRejection", (reason) => {
+  console.error("[FATAL] Unhandled rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("[FATAL] Uncaught exception:", err);
+  process.exit(1);
+});
+
 require("./config/env");
 const http        = require("http");
 const express     = require("express");

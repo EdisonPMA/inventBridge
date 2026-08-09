@@ -27,11 +27,16 @@ const CLIENT_URL = (() => {
   return url || "http://localhost:5173";
 })();
 
-/* ── One-time code store (in-memory, TTL 2 min) ───── */
-// In a multi-process deployment replace with Redis.
+/* ── One-time code store (in-memory, TTL 2 min, max 500 entries) ───── */
+const OTC_MAX = 500;
 const otcStore = new Map(); // code → { user, accessToken, expiresAt }
 
 function storeOtc(user, accessToken) {
+  // Evict oldest entry if at capacity to prevent unbounded memory growth
+  if (otcStore.size >= OTC_MAX) {
+    const oldestKey = otcStore.keys().next().value;
+    otcStore.delete(oldestKey);
+  }
   const code = crypto.randomBytes(32).toString("hex");
   otcStore.set(code, {
     user,

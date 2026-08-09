@@ -254,7 +254,18 @@ async function addParticipant(req, res) {
   try {
     const { user_id, role } = req.body;
     if (!user_id) return res.status(400).json({ message: "user_id required." });
-    await Conversation.addParticipant(req.params.id, user_id, role || "member");
+
+    // Only conversation admins can add participants or assign roles
+    const participants = await Conversation.getParticipants(req.params.id);
+    const caller = participants.find(p => p.user_id === req.user.id);
+    if (!caller) return res.status(403).json({ message: "You are not a participant." });
+    if (caller.role !== "admin" && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only conversation admins can add participants." });
+    }
+    // Prevent role escalation — only server admins can assign admin role
+    const assignedRole = (role === "admin" && req.user.role !== "admin") ? "member" : (role || "member");
+
+    await Conversation.addParticipant(req.params.id, user_id, assignedRole);
     const conv = await Conversation.findById(req.params.id);
     emitToUser(req, user_id, "conversation_created", conv);
     return res.json({ message: "Participant added." });
@@ -264,7 +275,16 @@ async function addParticipant(req, res) {
 /* ── DELETE /api/conversations/:id/participants/:uid */
 async function removeParticipant(req, res) {
   try {
-    await Conversation.removeParticipant(req.params.id, req.params.userId);
+    const participants = await Conversation.getParticipants(req.params.id);
+    const caller = participants.find(p => p.user_id === req.user.id);
+    if (!caller) return res.status(403).json({ message: "You are not a participant." });
+
+    const targetId = parseInt(req.params.userId);
+    // Allow self-removal, or admin removing anyone
+    if (caller.user_id !== targetId && caller.role !== "admin" && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only conversation admins can remove participants." });
+    }
+    await Conversation.removeParticipant(req.params.id, targetId);
     return res.json({ message: "Participant removed." });
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
@@ -272,6 +292,13 @@ async function removeParticipant(req, res) {
 /* ── DELETE /api/conversations/:id ──────────────── */
 async function deleteConversation(req, res) {
   try {
+    // Only participants (and only admins among them) can delete
+    const participants = await Conversation.getParticipants(req.params.id);
+    const caller = participants.find(p => p.user_id === req.user.id);
+    if (!caller) return res.status(403).json({ message: "You are not a participant." });
+    if (caller.role !== "admin" && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only conversation admins can delete a conversation." });
+    }
     await Conversation.remove(req.params.id);
     return res.json({ message: "Conversation deleted." });
   } catch (err) { return res.status(400).json({ message: err.message }); }
@@ -299,9 +326,10 @@ async function searchMessages(req, res) {
     if (!ok) return;
     const { q, limit = 20 } = req.query;
     if (!q?.trim()) return res.status(400).json({ message: "q (search term) required." });
-    const messages = await Message.search(req.params.id, q.trim(), { limit: parseInt(limit) || 20 });
+    if (q.trim().length > 200) return res.status(400).json({ message: "Search term too long (max 200 chars)." });
+    const messages = await Message.search(req.params.id, q.trim(), { limit: Math.min(parseInt(limit) || 20, 50) });
     return res.json({ messages });
-  } catch (err) { return res.status(500).json({ message: err.message }); }
+  } catch (err) { return res.status(500).json({ message: "Search failed." }); }
 }
 
 /* ── GET /api/conversations/:id/messages/pinned ──── */

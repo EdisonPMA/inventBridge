@@ -14,6 +14,14 @@ require("../config/env");
 const ACCESS_EXPIRY  = "15m";
 const REFRESH_EXPIRY = "7d";
 
+// Fail fast in production if secrets are not properly configured
+if (process.env.NODE_ENV === "production") {
+  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET must be set in production.");
+  if (!process.env.JWT_REFRESH_SECRET) {
+    console.warn("[WARN] JWT_REFRESH_SECRET not set — using derived secret. Set an independent secret for best security.");
+  }
+}
+
 /* ── Access token ────────────────────────────────── */
 function generateToken(user) {
   return jwt.sign(

@@ -35,9 +35,14 @@ async function getAllUsers(req, res) {
 async function getUserById(req, res) {
   try {
     const user = await User.findById(req.params.id);
+    // Strip sensitive fields for non-owners and non-admins
+    if (req.user.id !== user.id && req.user.role !== "admin") {
+      const { phone, last_login, email_verified, phone_verified, token_version, ...publicUser } = user;
+      return res.json({ user: publicUser });
+    }
     return res.json({ user });
   } catch (err) {
-    return res.status(404).json({ message: err.message });
+    return res.status(404).json({ message: "User not found." });
   }
 }
 

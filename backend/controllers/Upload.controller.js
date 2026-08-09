@@ -472,6 +472,13 @@ async function uploadPostMedia(req, res) {
 async function uploadMessageAttachment(req, res) {
   if (!assertFile(req, res)) return;
   try {
+    // Verify caller is a participant of this conversation
+    const Conversation = require("../models/Conversation.model");
+    const participants = await Conversation.getParticipants(req.params.conversationId);
+    if (!participants.some(p => p.user_id === req.user.id)) {
+      return res.status(403).json({ success: false, message: "You are not a participant of this conversation." });
+    }
+
     const result = await cloudStorage.uploadMessageAttachment(
       req.file.buffer,
       req.params.conversationId,
@@ -495,7 +502,7 @@ async function uploadMessageAttachment(req, res) {
     return res.status(201).json({ success: true, message });
   } catch (err) {
     console.error(`[Upload] Message attachment upload error:`, err.message);
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: "Upload failed." });
   }
 }
 

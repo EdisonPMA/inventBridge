@@ -17,36 +17,34 @@ const uploadLimiter = rateLimit({
 });
 
 /**
- * Auth limiter — 10 login attempts per IP per 15 minutes.
+ * Auth limiter — 30 login attempts per IP per 15 minutes.
  * Applied only to /login and /refresh.
  */
 const authLimiter = rateLimit({
   windowMs:         15 * 60 * 1000,
-  max:              10,
+  max:              30,
   message:          { message: "Too many attempts. Please try again in 15 minutes." },
   standardHeaders:  true,
   legacyHeaders:    false,
 });
 
 /**
- * Register limiter — 5 registrations per IP per hour.
- * More lenient than login but still prevents signup spam.
+ * Register limiter — 20 registrations per IP per hour.
  */
 const registerLimiter = rateLimit({
-  windowMs:         60 * 60 * 1000, // 1 hour
-  max:              5,
+  windowMs:         60 * 60 * 1000,
+  max:              20,
   message:          { message: "Too many registration attempts. Please try again in an hour." },
   standardHeaders:  true,
   legacyHeaders:    false,
 });
 
 /**
- * General API limiter — 100 requests per IP per minute.
- * Tightened for free-tier hosting (Render 512MB RAM, shared CPU).
+ * General API limiter — 300 requests per IP per minute.
  */
 const generalLimiter = rateLimit({
   windowMs:         60 * 1000,
-  max:              100,
+  max:              300,
   message:          { message: "Too many requests. Please slow down." },
   standardHeaders:  true,
   legacyHeaders:    false,

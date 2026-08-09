@@ -6,6 +6,15 @@ const Connection   = require("../models/Connection.model");
 const Notification = require("../models/Notification.model");
 const User         = require("../models/User.model");
 const db           = require("../config/database");
+const { invalidate: invalidatePresence } = require("../socket/presenceHandlers");
+
+// Invalidate presence cache for both parties when a connection changes
+function invalidatePresenceBoth(idA, idB) {
+  try {
+    invalidatePresence(`presence_connections:${idA}`);
+    invalidatePresence(`presence_connections:${idB}`);
+  } catch { /* non-critical */ }
+}
 
 /* ── helpers ─────────────────────────────────────── */
 function mapConn(conn, myId) {
@@ -153,6 +162,9 @@ async function acceptRequest(req, res) {
 
     const updated = await Connection.updateStatus(req.params.id, "accepted");
 
+    // Invalidate presence cache so both users see each other online immediately
+    invalidatePresenceBoth(conn.sender_id, conn.receiver_id);
+
     // Notify sender
     db.execute(
       `SELECT p.first_name, p.last_name FROM profiles p WHERE p.user_id = ? LIMIT 1`,
@@ -227,6 +239,8 @@ async function removeConnection(req, res) {
       return res.status(403).json({ message: "Not authorized to remove this connection." });
 
     const result = await Connection.remove(req.params.id);
+    // Invalidate presence cache so both users no longer see each other online
+    invalidatePresenceBoth(conn.sender_id, conn.receiver_id);
     return res.json(result);
   } catch (err) {
     return res.status(400).json({ message: err.message });
