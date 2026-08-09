@@ -137,8 +137,30 @@ async function findByUser(user_id) {
     [user_id, user_id]
   );
 
+  if (!rows.length) return rows;
+
+  // Batch-load all participants in one query instead of N separate queries
+  const convIds = rows.map(r => r.id);
+  const placeholders = convIds.map(() => "?").join(",");
+  const [allParticipants] = await db.execute(
+    `SELECT cp.conversation_id, cp.user_id, cp.joined_at, cp.role, cp.is_muted, cp.last_read_at,
+            p.first_name, p.last_name, p.profile_photo, p.verification_level,
+            u.role AS user_role, u.status
+     FROM conversation_participants cp
+     JOIN users u ON u.id = cp.user_id
+     LEFT JOIN profiles p ON p.user_id = cp.user_id
+     WHERE cp.conversation_id IN (${placeholders})`,
+    convIds
+  );
+
+  // Group participants by conversation_id
+  const participantMap = {};
+  for (const p of allParticipants) {
+    if (!participantMap[p.conversation_id]) participantMap[p.conversation_id] = [];
+    participantMap[p.conversation_id].push(p);
+  }
   for (const conv of rows) {
-    conv.participants = await getParticipants(conv.id);
+    conv.participants = participantMap[conv.id] || [];
   }
   return rows;
 }
@@ -154,7 +176,31 @@ async function findArchivedByUser(user_id) {
      ORDER BY last_message_at DESC`,
     [user_id]
   );
-  for (const conv of rows) conv.participants = await getParticipants(conv.id);
+
+  if (!rows.length) return rows;
+
+  // Batch-load participants in one query
+  const convIds = rows.map(r => r.id);
+  const placeholders = convIds.map(() => "?").join(",");
+  const [allParticipants] = await db.execute(
+    `SELECT cp.conversation_id, cp.user_id, cp.joined_at, cp.role, cp.is_muted, cp.last_read_at,
+            p.first_name, p.last_name, p.profile_photo, p.verification_level,
+            u.role AS user_role, u.status
+     FROM conversation_participants cp
+     JOIN users u ON u.id = cp.user_id
+     LEFT JOIN profiles p ON p.user_id = cp.user_id
+     WHERE cp.conversation_id IN (${placeholders})`,
+    convIds
+  );
+
+  const participantMap = {};
+  for (const p of allParticipants) {
+    if (!participantMap[p.conversation_id]) participantMap[p.conversation_id] = [];
+    participantMap[p.conversation_id].push(p);
+  }
+  for (const conv of rows) {
+    conv.participants = participantMap[conv.id] || [];
+  }
   return rows;
 }
 

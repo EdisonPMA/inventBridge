@@ -488,7 +488,7 @@ async function startupInsights(req, res) {
       const [invOffers, followers, views] = await Promise.all([
         one("SELECT COUNT(*) AS c FROM investments WHERE startup_id = ?", [startup_id]),
         one("SELECT COUNT(*) AS c FROM startup_followers WHERE startup_id = ?", [startup_id]),
-        one("SELECT COALESCE(SUM(view_count), 0) AS c FROM startup_views WHERE startup_id = ?", [startup_id]).catch(() => ({ c: 0 })),
+        one("SELECT COUNT(*) AS c FROM startup_views WHERE startup_id = ?", [startup_id]).catch(() => ({ c: 0 })),
       ]);
 
       contextStr = `${ai.startupContext(startup)}\n\nPlatform data:\n- Investment offers: ${invOffers?.c || 0}\n- Followers: ${followers?.c || 0}\n- Total views: ${views?.c || 0}`;

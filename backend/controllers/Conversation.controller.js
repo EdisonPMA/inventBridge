@@ -35,13 +35,18 @@ const db              = require("../config/database");
 
 /* ── helpers ─────────────────────────────────────── */
 async function assertParticipant(conversationId, userId, res) {
-  const participants = await Conversation.getParticipants(conversationId);
-  const isMember = participants.some(p => p.user_id === userId);
-  if (!isMember) {
-    res.status(403).json({ message: "You are not a participant of this conversation." });
+  try {
+    const participants = await Conversation.getParticipants(conversationId);
+    const isMember = participants.some(p => p.user_id === userId);
+    if (!isMember) {
+      res.status(403).json({ message: "You are not a participant of this conversation." });
+      return false;
+    }
+    return true;
+  } catch {
+    res.status(404).json({ message: "Conversation not found." });
     return false;
   }
-  return true;
 }
 
 function emitToConv(req, event, payload) {
@@ -107,13 +112,26 @@ async function getOrCreateDm(req, res) {
     const targetId = parseInt(req.params.userId);
     if (isNaN(targetId)) return res.status(400).json({ message: "Invalid userId." });
 
-    // Check if target has blocked caller or caller has blocked target
-    const [[blocked]] = await db.execute(
-      `SELECT id FROM blocked_users
-       WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)
-       LIMIT 1`,
-      [req.user.id, targetId, targetId, req.user.id]
+    // Validate target user exists before attempting DM creation
+    const [[targetUser]] = await db.execute(
+      "SELECT id FROM users WHERE id = ? AND status = 'active' LIMIT 1",
+      [targetId]
     );
+    if (!targetUser) return res.status(404).json({ message: "User not found." });
+
+    // Check if target has blocked caller or caller has blocked target
+    let blocked = null;
+    try {
+      [[blocked]] = await db.execute(
+        `SELECT id FROM blocked_users
+         WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)
+         LIMIT 1`,
+        [req.user.id, targetId, targetId, req.user.id]
+      );
+    } catch {
+      // blocked_users table may not exist — skip block check gracefully
+      blocked = null;
+    }
     if (blocked) return res.status(403).json({ message: "Cannot message this user." });
 
     const conversation = await Conversation.findOrCreatePrivate(req.user.id, targetId);

@@ -67,7 +67,7 @@ function registerMessageHandlers(socket, io, onlineUsers) {
         file_size:       file_size       || null,
         file_name:       file_name       || null,
         public_id:       public_id       || null,
-        reply_to_id:     reply_to_id ? parseInt(reply_to_id) : null,
+        reply_to_id:     (reply_to_id && Number.isInteger(Number(reply_to_id))) ? parseInt(reply_to_id) : null,
       });
 
       io.to(`conversation:${conversationId}`).emit("new_message", saved);

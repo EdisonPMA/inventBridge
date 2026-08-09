@@ -99,9 +99,22 @@ api.interceptors.response.use(
       ));
     }
 
+    // Network error on non-retried requests — auto-retry once after 5s (Render cold start)
+    if ((err.code === "ERR_NETWORK" || err.message?.includes("Network Error")) && !original._networkRetried) {
+      original._networkRetried = true;
+      await new Promise((r) => setTimeout(r, 5000)); // wait 5s for server to wake
+      try {
+        return await api(original);
+      } catch (retryErr) {
+        return Promise.reject(new Error(
+          "Unable to reach the server. The server may be starting up — please wait a moment and try again."
+        ));
+      }
+    }
+
     if (err.code === "ERR_NETWORK" || err.message?.includes("Network Error")) {
       return Promise.reject(new Error(
-        "Unable to reach the server. Please check your connection and try again."
+        "Unable to reach the server. The server may be starting up — please wait a moment and try again."
       ));
     }
 
