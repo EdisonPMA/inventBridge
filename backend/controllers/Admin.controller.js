@@ -1,5 +1,5 @@
-/**
- * Admin controller — centralized moderation, reporting, and audit.
+﻿/**
+ * Admin controller â€” centralized moderation, reporting, and audit.
  * Every function verifies admin role via requireAuth + requireRole("admin").
  * Identity always comes from req.user (JWT), never from request body.
  */
@@ -18,7 +18,7 @@ const {
   startupRejectedEmail,
 } = require("../utils/email");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function ok(res, data, status = 200)   { return res.status(status).json({ success: true,  ...data }); }
 function fail(res, msg, status = 400)  { return res.status(status).json({ success: false, message: msg }); }
 
@@ -26,10 +26,10 @@ async function audit(adminId, action, targetType, targetId, details) {
   AuditLog.log({ admin_id: adminId, action, target_type: targetType, target_id: targetId, details }).catch(() => {});
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    DASHBOARD STATS
    GET /api/admin/stats
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function getDashboardStats(req, res) {
   try {
     const { getOrSet } = require("../utils/cache");
@@ -81,9 +81,9 @@ async function getDashboardStats(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    USER MANAGEMENT
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* GET /api/admin/users */
 async function listUsers(req, res) {
@@ -119,7 +119,7 @@ async function listUsers(req, res) {
     );
     return ok(res, { users: rows, total, page: Math.max(parseInt(page) || 1, 1), limit: safeLimit });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -138,7 +138,7 @@ async function getUserDetail(req, res) {
     if (!rows.length) return fail(res, "User not found.", 404);
     return ok(res, { user: rows[0] });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -169,7 +169,7 @@ async function setUserStatus(req, res) {
       type: "general",
     }).catch(() => {});
 
-    // Email fallback — user may not be checking the platform
+    // Email fallback â€” user may not be checking the platform
     db.execute(
       `SELECT u.email, p.first_name, p.last_name
        FROM users u LEFT JOIN profiles p ON p.user_id = u.id
@@ -189,7 +189,7 @@ async function setUserStatus(req, res) {
 
     return ok(res, { message: `User ${status}.` });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -207,15 +207,15 @@ async function setUserRole(req, res) {
     audit(req.user.id, "user_role_changed", "user", targetId, { newRole: role });
     return ok(res, { message: `User role updated to ${role}.` });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STARTUP MODERATION
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── GET /api/admin/startups ──────────────────────── */
+/* â”€â”€ GET /api/admin/startups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function listStartups(req, res) {
   try {
     const { search, status, verification_status, page = 1, limit = 20 } = req.query;
@@ -251,11 +251,11 @@ async function listStartups(req, res) {
     );
     return ok(res, { startups: rows, total, page: Math.max(parseInt(page) || 1, 1), limit: safeLimit });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
-/* ── GET /api/admin/startups/:id ──────────────────── */
+/* â”€â”€ GET /api/admin/startups/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getStartupDetail(req, res) {
   try {
     const id = parseInt(req.params.id, 10);
@@ -310,7 +310,7 @@ async function getStartupDetail(req, res) {
       verificationHistory: verRequests,
     });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -346,18 +346,18 @@ async function setStartupStatus(req, res) {
 
     // Notify owner
     const msg = verification_status === "verified"
-      ? `🎉 Your startup "${startup.name}" has been verified and is now publicly visible to investors!`
+      ? `ðŸŽ‰ Your startup "${startup.name}" has been verified and is now publicly visible to investors!`
       : reason
       ? `Action taken on "${startup.name}": ${reason.trim()}`
       : `Your startup "${startup.name}" status has been updated.`;
     const title = verification_status === "verified"
-      ? "Startup Verified ✓"
+      ? "Startup Verified âœ“"
       : status === "suspended"
       ? "Startup Suspended"
       : "Startup Update";
     Notification.create({ user_id: startup.owner_id, title, message: msg, type: "verification" }).catch(() => {});
 
-    // Email fallback — founder must know even if not actively using the app
+    // Email fallback â€” founder must know even if not actively using the app
     if (verification_status === "verified" || verification_status === "rejected") {
       db.execute(
         `SELECT u.email, p.first_name, p.last_name
@@ -383,9 +383,9 @@ async function setStartupStatus(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    INVESTOR MANAGEMENT
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* GET /api/admin/investors */
 async function listInvestors(req, res) {
@@ -420,13 +420,13 @@ async function listInvestors(req, res) {
     );
     return ok(res, { investors: rows, total, page: Math.max(parseInt(page) || 1, 1), limit: safeLimit });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    POST MODERATION
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* GET /api/admin/posts */
 async function listPosts(req, res) {
@@ -462,7 +462,7 @@ async function listPosts(req, res) {
     );
     return ok(res, { posts: rows, total, page: Math.max(parseInt(page) || 1, 1), limit: safeLimit });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -491,9 +491,9 @@ async function setPostStatus(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    INVESTMENT OFFER MODERATION
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* GET /api/admin/investments */
 async function listInvestments(req, res) {
@@ -524,7 +524,7 @@ async function listInvestments(req, res) {
     );
     return ok(res, { investments: rows, total, page: Math.max(parseInt(page) || 1, 1), limit: safeLimit });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -550,13 +550,13 @@ async function suspendInvestment(req, res) {
     audit(req.user.id, "investment_suspended", "investment", targetId, { reason: reason.trim() });
     return ok(res, { message: "Investment offer suspended." });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    REPORTING SYSTEM
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* GET /api/admin/reports */
 async function listReports(req, res) {
@@ -565,7 +565,7 @@ async function listReports(req, res) {
     const result = await Report.findAll({ status, target_type, reason, page, limit });
     return ok(res, result);
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -593,24 +593,24 @@ async function updateReport(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    AUDIT LOGS
    GET /api/admin/audit-logs
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function getAuditLogs(req, res) {
   try {
     const { admin_id, action, target_type, page = 1, limit = 30 } = req.query;
     const result = await AuditLog.findAll({ admin_id, action, target_type, page, limit });
     return ok(res, result);
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SUSPENDED ACCOUNTS LIST
    GET /api/admin/suspended
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function listSuspended(req, res) {
   try {
     const { page = 1, limit = 20 } = req.query;
@@ -631,7 +631,7 @@ async function listSuspended(req, res) {
     );
     return ok(res, { users: rows, total });
   } catch (err) {
-    return fail(res, err.message, 500);
+    console.error("[Admin]", err.message, err.code, err.sqlMessage); return fail(res, "Internal error.", 500);
   }
 }
 
@@ -646,3 +646,4 @@ module.exports = {
   getAuditLogs,
   listSuspended,
 };
+
