@@ -13,27 +13,7 @@ const API_BASE = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://lo
 
 export default function GoogleAuthButton({ label = "Continue with Google", onError, className = "" }) {
   async function handleClick() {
-    try {
-      // Probe the endpoint with a HEAD request to detect rate limiting before
-      // doing a full-page redirect (which would show raw JSON on 429).
-      const res = await fetch(`${API_BASE}/api/auth/google`, {
-        method: "HEAD",
-        redirect: "manual", // stops at the 302 — doesn't follow to Google
-      });
-
-      if (res.status === 429) {
-        const retryAfter = res.headers.get("retry-after");
-        const mins = retryAfter ? Math.ceil(parseInt(retryAfter, 10) / 60) : 15;
-        onError?.(
-          `Too many sign-in attempts. Please wait ${mins} minute${mins !== 1 ? "s" : ""} and try again.`
-        );
-        return;
-      }
-    } catch {
-      // Network error — let the redirect attempt and fail naturally
-    }
-
-    // Safe to redirect
+    // Just redirect directly — backend rate limiting is handled per real IP now
     window.location.href = `${API_BASE}/api/auth/google`;
   }
 

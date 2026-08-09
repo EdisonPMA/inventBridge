@@ -177,26 +177,32 @@ app.set("io", io);
 app.set("onlineUsers", onlineUsers);
 
 // ── Boot ───────────────────────────────────────────
+const isProd = process.env.NODE_ENV === "production";
+
 DBconnect()
   .then(() => {
     server.listen(PORT, () =>
       console.log(`🚀 Server running on http://localhost:${PORT} (Socket.IO enabled)`)
     );
 
-    // ── Keep-alive ping ──────────────────────────────
-    // Render free tier sleeps after 15 min of inactivity.
-    // Ping the DB pool every 10 min to keep connections alive
-    // and reduce cold-start latency for users.
+    // Keep DB pool alive on Render (free tier sleeps after 15 min)
     const db = require("./config/database");
     setInterval(async () => {
-      try {
-        await db.execute("SELECT 1");
-      } catch (e) {
-        console.warn("[keep-alive] DB ping failed:", e.message);
-      }
-    }, 10 * 60 * 1000); // every 10 minutes
+      try { await db.execute("SELECT 1"); }
+      catch (e) { console.warn("[keep-alive] DB ping failed:", e.message); }
+    }, 10 * 60 * 1000);
   })
   .catch((err) => {
-    console.error("Failed to start server:", err.message);
-    process.exit(1);
+    if (isProd) {
+      // In production, a DB failure at startup is fatal
+      console.error("Failed to start server:", err.message);
+      process.exit(1);
+    } else {
+      // In local dev, start the server anyway so routes are testable
+      console.warn("⚠️  DB unavailable — starting server without DB (local dev mode)");
+      console.warn("   Error:", err.message);
+      server.listen(PORT, () =>
+        console.log(`🚀 Server running on http://localhost:${PORT} (no DB connection)`)
+      );
+    }
   });
