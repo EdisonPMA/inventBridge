@@ -54,7 +54,7 @@ module.exports = function configurePassport() {
             // Link Google if not already linked
             if (!existing.google_id) {
               await db.execute(
-                "UPDATE users SET google_id = ?, provider = 'google', email_verified = TRUE WHERE id = ?",
+                "UPDATE users SET google_id = ?, provider = 'google', email_verified = 1 WHERE id = ?",
                 [googleId, existing.id]
               );
               // Store Google photo in profile if none set

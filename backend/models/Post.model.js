@@ -16,23 +16,28 @@ const WITH_AUTHOR = `
 
 /* ── helpers ─────────────────────────────────────── */
 
-/** Fetch tagged users for a list of post IDs. Returns map: post_id → [{ user_id, first_name, last_name, profile_photo }] */
+/** Fetch tagged users for a list of post IDs. Returns map: post_id → [...] */
 async function fetchTags(postIds) {
   if (!postIds.length) return {};
-  const placeholders = postIds.map(() => "?").join(",");
-  const [rows] = await db.execute(
-    `SELECT pt.post_id, pt.user_id, p.first_name, p.last_name, p.profile_photo
-     FROM post_tags pt
-     LEFT JOIN profiles p ON p.user_id = pt.user_id
-     WHERE pt.post_id IN (${placeholders})`,
-    postIds
-  );
-  const map = {};
-  for (const row of rows) {
-    if (!map[row.post_id]) map[row.post_id] = [];
-    map[row.post_id].push({ user_id: row.user_id, first_name: row.first_name, last_name: row.last_name, profile_photo: row.profile_photo });
+  try {
+    const placeholders = postIds.map(() => "?").join(",");
+    const [rows] = await db.execute(
+      `SELECT pt.post_id, pt.user_id, p.first_name, p.last_name, p.profile_photo
+       FROM post_tags pt
+       LEFT JOIN profiles p ON p.user_id = pt.user_id
+       WHERE pt.post_id IN (${placeholders})`,
+      postIds
+    );
+    const map = {};
+    for (const row of rows) {
+      if (!map[row.post_id]) map[row.post_id] = [];
+      map[row.post_id].push({ user_id: row.user_id, first_name: row.first_name, last_name: row.last_name, profile_photo: row.profile_photo });
+    }
+    return map;
+  } catch {
+    // post_tags table may not exist yet — return empty map rather than crashing
+    return {};
   }
-  return map;
 }
 
 /* ── CREATE ──────────────────────────────────────── */
@@ -130,30 +135,31 @@ async function feed({ limit = 20, offset = 0 } = {}) {
  * Personalised feed for an authenticated viewer.
  */
 async function personalFeed(viewer_id, { limit = 20, offset = 0 } = {}) {
-  // Ensure integers for LIMIT/OFFSET
   const safeLimit  = Math.min(Math.max(parseInt(limit)  || 20, 1), 50);
   const safeOffset = Math.max(parseInt(offset) || 0, 0);
 
   const feedWhere = `
-    WHERE po.visibility = 'public'
-       OR (
-         po.visibility = 'connections'
-         AND po.user_id IN (
-           SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END
-           FROM connections
-           WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'
-         )
-       )
-       OR (
-         po.startup_id IS NOT NULL
-         AND po.startup_id IN (
-           SELECT startup_id FROM startup_followers WHERE user_id = ?
-         )
-       )`;
+    WHERE (
+      po.visibility = 'public'
+      OR (
+        po.visibility = 'connections'
+        AND po.user_id IN (
+          SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END
+          FROM connections
+          WHERE (sender_id = ? OR receiver_id = ?) AND status = 'accepted'
+        )
+      )
+      OR (
+        po.startup_id IS NOT NULL
+        AND po.startup_id IN (
+          SELECT startup_id FROM startup_followers WHERE user_id = ?
+        )
+      )
+    )`;
 
+  // Fetch posts without the EXISTS subquery (TiDB compatibility)
   const [rows] = await db.execute(
-    `SELECT ${WITH_AUTHOR},
-            EXISTS(SELECT 1 FROM post_likes vl WHERE vl.post_id = po.id AND vl.user_id = ?) AS viewer_liked
+    `SELECT ${WITH_AUTHOR}
      FROM posts po
      JOIN users u ON u.id = po.user_id
      LEFT JOIN profiles p ON p.user_id = po.user_id
@@ -161,16 +167,26 @@ async function personalFeed(viewer_id, { limit = 20, offset = 0 } = {}) {
      ${feedWhere}
      ORDER BY po.created_at DESC
      LIMIT ? OFFSET ?`,
-    [viewer_id, viewer_id, viewer_id, viewer_id, viewer_id, safeLimit, safeOffset]
+    [viewer_id, viewer_id, viewer_id, viewer_id, safeLimit, safeOffset]
   );
 
-  // COUNT in a subquery to avoid repeating the complex WHERE
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM posts po ${feedWhere}`,
     [viewer_id, viewer_id, viewer_id, viewer_id]
   );
 
+  // Fetch viewer_liked separately to avoid EXISTS in SELECT (TiDB compat)
   const ids = rows.map(r => r.id);
+  if (ids.length) {
+    const likedPlaceholders = ids.map(() => "?").join(",");
+    const [likedRows] = await db.execute(
+      `SELECT post_id FROM post_likes WHERE user_id = ? AND post_id IN (${likedPlaceholders})`,
+      [viewer_id, ...ids]
+    ).catch(() => [[]]);
+    const likedSet = new Set(likedRows.map(r => r.post_id));
+    rows.forEach(r => { r.viewer_liked = likedSet.has(r.id) ? 1 : 0; });
+  }
+
   const tagMap = await fetchTags(ids);
   rows.forEach(r => { r.tagged_users = tagMap[r.id] || []; });
 

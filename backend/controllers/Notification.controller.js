@@ -21,7 +21,8 @@ async function getMyNotifications(req, res) {
     });
     return res.json(result);
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    console.error("[Notifications] getMyNotifications error:", err.message, err.code);
+    return res.status(500).json({ message: "Could not load notifications." });
   }
 }
 

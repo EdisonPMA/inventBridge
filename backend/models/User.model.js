@@ -128,11 +128,11 @@ async function setPasswordHash(id, password_hash) {
 }
 
 async function markEmailVerified(id) {
-  await db.execute("UPDATE users SET email_verified = TRUE WHERE id = ?", [id]);
+  await db.execute("UPDATE users SET email_verified = 1 WHERE id = ?", [id]);
 }
 
 async function markPhoneVerified(id) {
-  await db.execute("UPDATE users SET phone_verified = TRUE WHERE id = ?", [id]);
+  await db.execute("UPDATE users SET phone_verified = 1 WHERE id = ?", [id]);
 }
 
 async function touchLastLogin(id) {

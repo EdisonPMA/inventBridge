@@ -187,7 +187,7 @@ async function countUnread(user_id, conversation_id = null) {
   if (conversation_id) {
     const [[{ total }]] = await db.execute(
       `SELECT COUNT(*) AS total FROM messages
-       WHERE conversation_id = ? AND sender_id != ? AND is_read = FALSE AND deleted_at IS NULL`,
+       WHERE conversation_id = ? AND sender_id != ? AND is_read = 0 AND deleted_at IS NULL`,
       [conversation_id, user_id]
     );
     return total;
@@ -195,7 +195,7 @@ async function countUnread(user_id, conversation_id = null) {
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM messages m
      JOIN conversation_participants cp ON cp.conversation_id = m.conversation_id AND cp.user_id = ?
-     WHERE m.sender_id != ? AND m.is_read = FALSE AND m.deleted_at IS NULL`,
+     WHERE m.sender_id != ? AND m.is_read = 0 AND m.deleted_at IS NULL`,
     [user_id, user_id]
   );
   return total;
@@ -204,8 +204,8 @@ async function countUnread(user_id, conversation_id = null) {
 /* ── UPDATE ──────────────────────────────────────── */
 async function markRead(conversation_id, reader_id) {
   await db.execute(
-    `UPDATE messages SET is_read = TRUE, status = 'read'
-     WHERE conversation_id = ? AND sender_id != ? AND is_read = FALSE AND deleted_at IS NULL`,
+    `UPDATE messages SET is_read = 1, status = 'read'
+     WHERE conversation_id = ? AND sender_id != ? AND is_read = 0 AND deleted_at IS NULL`,
     [conversation_id, reader_id]
   );
   // Track per-participant last_read_at
@@ -217,7 +217,7 @@ async function markRead(conversation_id, reader_id) {
 }
 
 async function markOneRead(id) {
-  await db.execute("UPDATE messages SET is_read = TRUE, status = 'read' WHERE id = ?", [id]);
+  await db.execute("UPDATE messages SET is_read = 1, status = 'read' WHERE id = ?", [id]);
 }
 
 /** Edit a message (sets edited_at timestamp) */

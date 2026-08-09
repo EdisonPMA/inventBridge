@@ -109,7 +109,16 @@ async function getFeed(req, res) {
 
     let result;
     if (viewerId) {
-      result = await Post.personalFeed(viewerId, { limit: safeLimit, offset: safeOffset });
+      try {
+        result = await Post.personalFeed(viewerId, { limit: safeLimit, offset: safeOffset });
+      } catch (feedErr) {
+        console.error("[getFeed] personalFeed failed, falling back to public feed:", feedErr.message, feedErr.code);
+        // Fall back to public feed if personalized query fails
+        result = await Post.findAll({
+          visibility: "public",
+          limit: safeLimit, offset: safeOffset,
+        });
+      }
     } else {
       result = await Post.findAll({
         user_id, startup_id, visibility: "public",
@@ -129,8 +138,8 @@ async function getFeed(req, res) {
       },
     });
   } catch (err) {
-    console.error("[getFeed]", err.message);
-    return res.status(500).json({ message: err.message });
+    console.error("[getFeed] error:", err.message, "code:", err.code, "sql:", err.sql?.slice(0, 200));
+    return res.status(500).json({ message: "Could not load posts." });
   }
 }
 

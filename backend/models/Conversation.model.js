@@ -103,7 +103,7 @@ async function findById(id, viewer_id = null) {
   if (viewer_id) {
     const [[{ unread }]] = await db.execute(
       `SELECT COUNT(*) AS unread FROM messages
-       WHERE conversation_id = ? AND sender_id != ? AND is_read = FALSE AND deleted_at IS NULL`,
+       WHERE conversation_id = ? AND sender_id != ? AND is_read = 0 AND deleted_at IS NULL`,
       [id, viewer_id]
     );
     conversation.unread_count = unread;
@@ -128,7 +128,7 @@ async function findByUser(user_id) {
        (SELECT m.sender_id FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_sender_id,
        (SELECT m.created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at,
        (SELECT COUNT(*) FROM messages m
-        WHERE m.conversation_id = c.id AND m.sender_id != ? AND m.is_read = FALSE AND m.deleted_at IS NULL) AS unread_count
+        WHERE m.conversation_id = c.id AND m.sender_id != ? AND m.is_read = 0 AND m.deleted_at IS NULL) AS unread_count
      FROM conversations c
      JOIN conversation_participants cp_me ON cp_me.conversation_id = c.id AND cp_me.user_id = ?
      LEFT JOIN startups s ON s.id = c.startup_id

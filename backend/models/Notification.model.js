@@ -54,7 +54,7 @@ async function findByUser(user_id, { is_read, type, limit = 30, offset = 0 } = {
     `SELECT COUNT(*) AS total FROM notifications ${where}`, params
   );
   const [[{ unread }]] = await db.execute(
-    "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = ? AND is_read = FALSE",
+    "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = ? AND is_read = 0",
     [user_id]
   );
   return { rows, total, unread };
@@ -62,13 +62,13 @@ async function findByUser(user_id, { is_read, type, limit = 30, offset = 0 } = {
 
 /* ── UPDATE ──────────────────────────────────────── */
 async function markRead(id) {
-  await db.execute("UPDATE notifications SET is_read = TRUE WHERE id = ?", [id]);
+  await db.execute("UPDATE notifications SET is_read = 1 WHERE id = ?", [id]);
   return findById(id);
 }
 
 async function markAllRead(user_id) {
   const [result] = await db.execute(
-    "UPDATE notifications SET is_read = TRUE WHERE user_id = ? AND is_read = FALSE",
+    "UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0",
     [user_id]
   );
   return { updated: result.affectedRows };

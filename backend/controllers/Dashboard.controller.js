@@ -224,11 +224,11 @@ async function investorDashboard(req, res) {
         [userId, userId]
       ),
       one("SELECT COUNT(*) AS total FROM startup_followers WHERE user_id = ?", [userId]),
-      one("SELECT COUNT(*) AS total FROM notifications WHERE user_id = ? AND is_read = FALSE", [userId]),
+      one("SELECT COUNT(*) AS total FROM notifications WHERE user_id = ? AND is_read = 0", [userId]),
       one(
         `SELECT COUNT(*) AS total FROM messages m
          JOIN conversation_participants cp ON cp.conversation_id = m.conversation_id
-         WHERE cp.user_id = ? AND m.sender_id != ? AND m.is_read = FALSE`,
+         WHERE cp.user_id = ? AND m.sender_id != ? AND m.is_read = 0`,
         [userId, userId]
       ),
       one(
