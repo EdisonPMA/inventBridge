@@ -89,8 +89,8 @@ async function getDashboardStats(req, res) {
 async function listUsers(req, res) {
   try {
     const { search, role, status, page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+    const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
     const conditions = [];
     const params     = [];
@@ -219,8 +219,8 @@ async function setUserRole(req, res) {
 async function listStartups(req, res) {
   try {
     const { search, status, verification_status, page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+    const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
     const conditions = [];
     const params     = [];
@@ -391,8 +391,8 @@ async function setStartupStatus(req, res) {
 async function listInvestors(req, res) {
   try {
     const { search, status, verification_level, page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+    const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
     const conditions = ["u.role = 'investor'"];
     const params     = [];
@@ -432,8 +432,8 @@ async function listInvestors(req, res) {
 async function listPosts(req, res) {
   try {
     const { search, visibility, page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+    const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
     const conditions = [];
     const params     = [];
@@ -499,8 +499,8 @@ async function setPostStatus(req, res) {
 async function listInvestments(req, res) {
   try {
     const { status, page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+    const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
     const params = [];
     const where  = status ? "WHERE i.status = ?" : "";
@@ -614,8 +614,8 @@ async function getAuditLogs(req, res) {
 async function listSuspended(req, res) {
   try {
     const { page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+    const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
     const [rows] = await db.execute(
       `SELECT u.id, u.email, u.role, u.status, u.created_at,
@@ -646,4 +646,5 @@ module.exports = {
   getAuditLogs,
   listSuspended,
 };
+
 

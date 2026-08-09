@@ -1,11 +1,11 @@
-/**
- * Investment controller — full offer + negotiation workflow.
+﻿/**
+ * Investment controller â€” full offer + negotiation workflow.
  *
  * State machine:
- *   pending → negotiating | accepted | rejected | cancelled
- *   negotiating → accepted | rejected | cancelled
- *   accepted → finalized
- *   rejected / cancelled / finalized → terminal
+ *   pending â†’ negotiating | accepted | rejected | cancelled
+ *   negotiating â†’ accepted | rejected | cancelled
+ *   accepted â†’ finalized
+ *   rejected / cancelled / finalized â†’ terminal
  *
  * Real-time: socket emission to the target user if online.
  * Fallback:  email sent for the 3 highest-impact events (offer, accept, finalize).
@@ -22,7 +22,7 @@ const {
   investmentFinalizedEmail,
 } = require("../utils/email");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const ALLOWED_STATUSES = ["pending","negotiating","accepted","rejected","cancelled","finalized"];
 
 const TRANSITIONS = {
@@ -45,7 +45,7 @@ function notify(req, { event, payload, userId, title, message }) {
   Notification.create({ user_id: userId, title, message, type: "investment" }).catch(() => {});
 }
 
-/* ── GET profile email for a user ───────────────── */
+/* â”€â”€ GET profile email for a user â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getUserContact(userId) {
   try {
     const [[row]] = await db.execute(
@@ -58,9 +58,9 @@ async function getUserContact(userId) {
   } catch { return null; }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    POST /api/investments
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function createInvestment(req, res) {
   try {
     const investorId = req.user.id;
@@ -103,7 +103,7 @@ async function createInvestment(req, res) {
       message: `You received an investment offer of ${amtFmt} for "${startup.name}".`,
     });
 
-    // Email fallback — critical event: founder must know even if offline
+    // Email fallback â€” critical event: founder must know even if offline
     Promise.all([
       getUserContact(investorId),
       getUserContact(startup.owner_id),
@@ -133,7 +133,7 @@ async function createInvestment(req, res) {
           const allParticipants = [...new Set([startup.owner_id, ...activeInvestors.map(r => r.investor_id)])];
           const [[existing]] = await db.execute(
             `SELECT id FROM conversations WHERE type = 'group' AND title = ? LIMIT 1`,
-            [`${startup.name} — Investor Group`]
+            [`${startup.name} â€” Investor Group`]
           );
           if (existing) {
             await Conversation.addParticipant(existing.id, investorId).catch(() => {});
@@ -157,7 +157,7 @@ async function createInvestment(req, res) {
             } catch { /* non-critical */ }
           } else {
             const newConv = await Conversation.create({
-              type: "group", title: `${startup.name} — Investor Group`,
+              type: "group", title: `${startup.name} â€” Investor Group`,
               created_by: startup.owner_id, participant_ids: allParticipants,
             });
             // Broadcast the new group to all participants
@@ -185,7 +185,7 @@ async function createInvestment(req, res) {
   }
 }
 
-/* ── GET /api/investments  (admin) ──────────────── */
+/* â”€â”€ GET /api/investments  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getAllInvestments(req, res) {
   try {
     const { status, startup_id, investor_id, limit = 20, offset = 0 } = req.query;
@@ -197,7 +197,7 @@ async function getAllInvestments(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── GET /api/investments/mine ───────────────────── */
+/* â”€â”€ GET /api/investments/mine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyInvestments(req, res) {
   try {
     const { status } = req.query;
@@ -206,7 +206,7 @@ async function getMyInvestments(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── GET /api/investments/received ──────────────── */
+/* â”€â”€ GET /api/investments/received â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getReceivedInvestments(req, res) {
   try {
     const { status } = req.query;
@@ -215,7 +215,7 @@ async function getReceivedInvestments(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── GET /api/investments/startup/:startupId ─────── */
+/* â”€â”€ GET /api/investments/startup/:startupId â”€â”€â”€â”€â”€â”€â”€ */
 async function getStartupInvestments(req, res) {
   try {
     const startup = await Startup.findById(req.params.startupId);
@@ -227,7 +227,7 @@ async function getStartupInvestments(req, res) {
   } catch (err) { return res.status(404).json({ message: err.message }); }
 }
 
-/* ── GET /api/investments/:id ────────────────────── */
+/* â”€â”€ GET /api/investments/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getInvestmentById(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -241,7 +241,7 @@ async function getInvestmentById(req, res) {
   } catch (err) { return res.status(404).json({ message: err.message }); }
 }
 
-/* ── GET /api/investments/:id/history ────────────── */
+/* â”€â”€ GET /api/investments/:id/history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getInvestmentHistory(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -256,7 +256,7 @@ async function getInvestmentHistory(req, res) {
   } catch (err) { return res.status(404).json({ message: err.message }); }
 }
 
-/* ── PATCH /api/investments/:id/accept ───────────── */
+/* â”€â”€ PATCH /api/investments/:id/accept â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function acceptInvestment(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -276,7 +276,7 @@ async function acceptInvestment(req, res) {
       message: `Your investment offer for "${startup.name}" has been accepted.`,
     });
 
-    // Email fallback — critical: investor needs to know even if offline
+    // Email fallback â€” critical: investor needs to know even if offline
     Promise.all([
       getUserContact(investment.investor_id),
       getUserContact(startup.owner_id),
@@ -296,7 +296,7 @@ async function acceptInvestment(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PATCH /api/investments/:id/reject ───────────── */
+/* â”€â”€ PATCH /api/investments/:id/reject â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function rejectInvestment(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -320,7 +320,7 @@ async function rejectInvestment(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PATCH /api/investments/:id/negotiate ────────── */
+/* â”€â”€ PATCH /api/investments/:id/negotiate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function negotiateInvestment(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -349,7 +349,7 @@ async function negotiateInvestment(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PATCH /api/investments/:id/cancel ───────────── */
+/* â”€â”€ PATCH /api/investments/:id/cancel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function cancelInvestment(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -373,7 +373,7 @@ async function cancelInvestment(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PATCH /api/investments/:id/finalize ─────────── */
+/* â”€â”€ PATCH /api/investments/:id/finalize â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function finalizeInvestment(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -402,7 +402,7 @@ async function finalizeInvestment(req, res) {
       message: `The investment deal for "${startup.name}" has been finalized.`,
     });
 
-    // Email both parties — finalization is the highest-impact event
+    // Email both parties â€” finalization is the highest-impact event
     Promise.all([
       getUserContact(investment.investor_id),
       getUserContact(startup.owner_id),
@@ -429,7 +429,7 @@ async function finalizeInvestment(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/investments/:id/status  (general) ──── */
+/* â”€â”€ PUT /api/investments/:id/status  (general) â”€â”€â”€â”€ */
 async function updateInvestmentStatus(req, res) {
   try {
     const { status } = req.body;
@@ -453,7 +453,7 @@ async function updateInvestmentStatus(req, res) {
     }
 
     if (!TRANSITIONS[investment.status]?.includes(status))
-      return res.status(409).json({ message: `Invalid transition: ${investment.status} → ${status}.` });
+      return res.status(409).json({ message: `Invalid transition: ${investment.status} â†’ ${status}.` });
 
     const updated  = await Investment.updateStatus(investment.id, status, req.user.id);
     const notifyId = isFounder ? investment.investor_id : startup.owner_id;
@@ -476,7 +476,7 @@ async function updateInvestmentStatus(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/investments/:id/offer  (counter-offer) ─ */
+/* â”€â”€ PUT /api/investments/:id/offer  (counter-offer) â”€ */
 async function updateOffer(req, res) {
   try {
     const investment = await Investment.findById(req.params.id);
@@ -491,7 +491,7 @@ async function updateOffer(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── DELETE /api/investments/:id  (admin) ────────── */
+/* â”€â”€ DELETE /api/investments/:id  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deleteInvestment(req, res) {
   try {
     const result = await Investment.remove(req.params.id);
@@ -509,3 +509,4 @@ module.exports = {
   finalizeInvestment, updateInvestmentStatus,
   updateOffer, deleteInvestment,
 };
+

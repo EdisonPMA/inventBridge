@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Industry controller
  * Routes: GET /api/industries, GET /api/industries/:id,
  *         POST /api/industries (admin), PUT /api/industries/:id (admin),
@@ -6,7 +6,7 @@
  */
 const Industry = require("../models/Industry.model");
 
-/* ── GET /api/industries ─────────────────────────── */
+/* â”€â”€ GET /api/industries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getAllIndustries(req, res) {
   try {
     const { status } = req.query;
@@ -17,7 +17,7 @@ async function getAllIndustries(req, res) {
   }
 }
 
-/* ── GET /api/industries/:id ────────────────────── */
+/* â”€â”€ GET /api/industries/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getIndustryById(req, res) {
   try {
     const industry = await Industry.findById(req.params.id);
@@ -27,7 +27,7 @@ async function getIndustryById(req, res) {
   }
 }
 
-/* ── POST /api/industries  (admin) ──────────────── */
+/* â”€â”€ POST /api/industries  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function createIndustry(req, res) {
   try {
     const { name, description, icon } = req.body;
@@ -40,7 +40,7 @@ async function createIndustry(req, res) {
   }
 }
 
-/* ── PUT /api/industries/:id  (admin) ────────────── */
+/* â”€â”€ PUT /api/industries/:id  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateIndustry(req, res) {
   try {
     const industry = await Industry.update(req.params.id, req.body);
@@ -50,7 +50,7 @@ async function updateIndustry(req, res) {
   }
 }
 
-/* ── DELETE /api/industries/:id  (admin) ─────────── */
+/* â”€â”€ DELETE /api/industries/:id  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deleteIndustry(req, res) {
   try {
     const result = await Industry.remove(req.params.id);
@@ -65,3 +65,4 @@ module.exports = {
   getAllIndustries, getIndustryById,
   createIndustry, updateIndustry, deleteIndustry,
 };
+

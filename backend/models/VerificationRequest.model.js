@@ -1,5 +1,5 @@
-/**
- * VerificationRequest model — table: verification_requests
+﻿/**
+ * VerificationRequest model â€” table: verification_requests
  * Handles user and startup identity verification workflows.
  * Statuses: pending | under_review | approved | rejected
  */
@@ -20,7 +20,7 @@ const JOIN_RELATIONS = `
   LEFT JOIN profiles ap ON ap.user_id = vr.verified_by
 `;
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({
   user_id, startup_id = null, verification_type, document_url = null,
 }) {
@@ -45,7 +45,7 @@ async function create({
   return findById(result.insertId);
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     `SELECT ${WITH_RELATIONS} FROM verification_requests vr ${JOIN_RELATIONS}
@@ -68,8 +68,7 @@ async function findAll({ status, user_id, startup_id, verification_type, limit =
 
   const [rows] = await db.execute(
     `SELECT ${WITH_RELATIONS} FROM verification_requests vr ${JOIN_RELATIONS}
-     ${where} ORDER BY vr.created_at DESC LIMIT ? OFFSET ?`,
-    [...params, limit, offset]
+     ${where} ORDER BY vr.created_at DESC LIMIT ? OFFSET ?`,[...params, (parseInt(limit)||30)|0, (parseInt(offset)||0)|0]
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM verification_requests vr ${where}`, params
@@ -93,7 +92,7 @@ async function countPending() {
   return total;
 }
 
-/* ── UPDATE ──────────────────────────────────────── */
+/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function startReview(id, admin_id) {
   await db.execute(
     "UPDATE verification_requests SET status = 'under_review', verified_by = ? WHERE id = ?",
@@ -131,7 +130,7 @@ async function uploadDocument(id, document_url) {
   return findById(id);
 }
 
-/* ── DELETE ──────────────────────────────────────── */
+/* â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function remove(id) {
   const [result] = await db.execute(
     "DELETE FROM verification_requests WHERE id = ?", [id]
@@ -144,3 +143,4 @@ module.exports = {
   create, findById, findAll, findByUser,
   countPending, startReview, approve, reject, uploadDocument, remove,
 };
+

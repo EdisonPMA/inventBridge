@@ -1,10 +1,10 @@
-/**
- * Notification model — table: notifications
+﻿/**
+ * Notification model â€” table: notifications
  * In-app notification delivery and read-state management.
  */
 const db = require("../config/database");
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({ user_id, title, message = null, type = "general" }) {
   const [result] = await db.execute(
     "INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)",
@@ -25,7 +25,7 @@ async function createBulk(user_ids, { title, message = null, type = "general" })
   return { sent: user_ids.length };
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     "SELECT * FROM notifications WHERE id = ? LIMIT 1", [id]
@@ -41,9 +41,9 @@ async function findByUser(user_id, { is_read, type, limit = 30, offset = 0 } = {
   if (type)                  { conditions.push("type = ?");    params.push(type); }
 
   const where = `WHERE ${conditions.join(" AND ")}`;
-  // Ensure integers — mysql2 on TiDB Cloud rejects string LIMIT/OFFSET
-  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 30, 1), 100);
-  const safeOffset = Math.max(parseInt(offset) || 0, 0);
+  // Ensure integers â€” mysql2 on TiDB Cloud rejects string LIMIT/OFFSET
+  const safeLimit  = (Math.min(Math.max(parseInt(limit) || 30, 1), 100)) | 0;
+  const safeOffset = (Math.max(parseInt(offset) || 0, 0)) | 0;
 
   const [rows] = await db.execute(
     `SELECT * FROM notifications ${where}
@@ -60,7 +60,7 @@ async function findByUser(user_id, { is_read, type, limit = 30, offset = 0 } = {
   return { rows, total, unread };
 }
 
-/* ── UPDATE ──────────────────────────────────────── */
+/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function markRead(id) {
   await db.execute("UPDATE notifications SET is_read = 1 WHERE id = ?", [id]);
   return findById(id);
@@ -74,7 +74,7 @@ async function markAllRead(user_id) {
   return { updated: result.affectedRows };
 }
 
-/* ── DELETE ──────────────────────────────────────── */
+/* â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function remove(id) {
   const [result] = await db.execute("DELETE FROM notifications WHERE id = ?", [id]);
   if (!result.affectedRows) throw new Error("Notification not found.");
@@ -94,3 +94,4 @@ module.exports = {
   markRead, markAllRead,
   remove, clearAll,
 };
+

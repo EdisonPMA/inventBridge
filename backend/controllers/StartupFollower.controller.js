@@ -1,4 +1,4 @@
-/**
+﻿/**
  * StartupFollower controller
  * Routes:
  *   POST   /api/startups/:startupId/follow       (toggle follow/unfollow)
@@ -8,7 +8,7 @@
  */
 const StartupFollower = require("../models/StartupFollower.model");
 
-/* ── POST /api/startups/:startupId/follow ────────── */
+/* â”€â”€ POST /api/startups/:startupId/follow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function toggleFollow(req, res) {
   try {
     const result = await StartupFollower.toggle(req.params.startupId, req.user.id);
@@ -50,7 +50,7 @@ async function toggleFollow(req, res) {
   }
 }
 
-/* ── GET /api/startups/:startupId/followers ─────── */
+/* â”€â”€ GET /api/startups/:startupId/followers â”€â”€â”€â”€â”€â”€â”€ */
 async function getFollowers(req, res) {
   try {
     const { limit = 20, offset = 0 } = req.query;
@@ -63,7 +63,7 @@ async function getFollowers(req, res) {
   }
 }
 
-/* ── GET /api/startups/:startupId/follow/status ──── */
+/* â”€â”€ GET /api/startups/:startupId/follow/status â”€â”€â”€â”€ */
 async function getFollowStatus(req, res) {
   try {
     const db = require("../config/database");
@@ -79,7 +79,7 @@ async function getFollowStatus(req, res) {
   }
 }
 
-/* ── GET /api/users/me/following ─────────────────── */
+/* â”€â”€ GET /api/users/me/following â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getFollowedStartups(req, res) {
   try {
     const { limit = 20, offset = 0 } = req.query;
@@ -93,3 +93,4 @@ async function getFollowedStartups(req, res) {
 }
 
 module.exports = { toggleFollow, getFollowers, getFollowStatus, getFollowedStartups };
+

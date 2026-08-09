@@ -1,5 +1,5 @@
-/**
- * Conversation controller — chat v2
+﻿/**
+ * Conversation controller â€” chat v2
  *
  * REST endpoints:
  *   GET    /api/conversations                         my conversations
@@ -33,7 +33,7 @@ const Notification    = require("../models/Notification.model");
 const ContactRequest  = require("../models/ContactRequest.model");
 const db              = require("../config/database");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function assertParticipant(conversationId, userId, res) {
   try {
     const participants = await Conversation.getParticipants(conversationId);
@@ -67,7 +67,7 @@ function emitToUser(req, userId, event, payload) {
   } catch { /* non-critical */ }
 }
 
-/* ── GET /api/conversations ──────────────────────── */
+/* â”€â”€ GET /api/conversations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyConversations(req, res) {
   try {
     const conversations = await Conversation.findByUser(req.user.id);
@@ -75,7 +75,7 @@ async function getMyConversations(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── GET /api/conversations/archived ────────────── */
+/* â”€â”€ GET /api/conversations/archived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getArchivedConversations(req, res) {
   try {
     const conversations = await Conversation.findArchivedByUser(req.user.id);
@@ -83,7 +83,7 @@ async function getArchivedConversations(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── POST /api/conversations ─────────────────────── */
+/* â”€â”€ POST /api/conversations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function createConversation(req, res) {
   try {
     const { participant_ids, title, type = "group", startup_id, investment_id } = req.body;
@@ -106,7 +106,7 @@ async function createConversation(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── POST /api/conversations/dm/:userId ──────────── */
+/* â”€â”€ POST /api/conversations/dm/:userId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getOrCreateDm(req, res) {
   try {
     const targetId = parseInt(req.params.userId);
@@ -129,7 +129,7 @@ async function getOrCreateDm(req, res) {
         [req.user.id, targetId, targetId, req.user.id]
       );
     } catch {
-      // blocked_users table may not exist — skip block check gracefully
+      // blocked_users table may not exist â€” skip block check gracefully
       blocked = null;
     }
     if (blocked) return res.status(403).json({ message: "Cannot message this user." });
@@ -139,7 +139,7 @@ async function getOrCreateDm(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── POST /api/conversations/contact-request ─────── */
+/* â”€â”€ POST /api/conversations/contact-request â”€â”€â”€â”€â”€â”€â”€ */
 async function sendContactRequest(req, res) {
   try {
     const { receiver_id, startup_id, message } = req.body;
@@ -166,7 +166,7 @@ async function sendContactRequest(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── GET /api/conversations/contact-requests ─────── */
+/* â”€â”€ GET /api/conversations/contact-requests â”€â”€â”€â”€â”€â”€â”€ */
 async function getContactRequests(req, res) {
   try {
     const requests = await ContactRequest.findPendingForUser(req.user.id);
@@ -174,7 +174,7 @@ async function getContactRequests(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── POST /api/conversations/contact-requests/:id/respond */
+/* â”€â”€ POST /api/conversations/contact-requests/:id/respond */
 async function respondContactRequest(req, res) {
   try {
     const { action } = req.body; // "accept" | "decline"
@@ -204,7 +204,7 @@ async function respondContactRequest(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── GET /api/conversations/:id ──────────────────── */
+/* â”€â”€ GET /api/conversations/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getConversationById(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -214,7 +214,7 @@ async function getConversationById(req, res) {
   } catch (err) { return res.status(404).json({ message: err.message }); }
 }
 
-/* ── PUT /api/conversations/:id/title ────────────── */
+/* â”€â”€ PUT /api/conversations/:id/title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateTitle(req, res) {
   try {
     const { title } = req.body;
@@ -227,7 +227,7 @@ async function updateTitle(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/conversations/:id/archive ─────────── */
+/* â”€â”€ PUT /api/conversations/:id/archive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function toggleArchive(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -238,7 +238,7 @@ async function toggleArchive(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/conversations/:id/mute ────────────── */
+/* â”€â”€ PUT /api/conversations/:id/mute â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function toggleMute(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -249,7 +249,7 @@ async function toggleMute(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── POST /api/conversations/:id/participants ─────── */
+/* â”€â”€ POST /api/conversations/:id/participants â”€â”€â”€â”€â”€â”€â”€ */
 async function addParticipant(req, res) {
   try {
     const { user_id, role } = req.body;
@@ -262,7 +262,7 @@ async function addParticipant(req, res) {
     if (caller.role !== "admin" && req.user.role !== "admin") {
       return res.status(403).json({ message: "Only conversation admins can add participants." });
     }
-    // Prevent role escalation — only server admins can assign admin role
+    // Prevent role escalation â€” only server admins can assign admin role
     const assignedRole = (role === "admin" && req.user.role !== "admin") ? "member" : (role || "member");
 
     await Conversation.addParticipant(req.params.id, user_id, assignedRole);
@@ -272,7 +272,7 @@ async function addParticipant(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── DELETE /api/conversations/:id/participants/:uid */
+/* â”€â”€ DELETE /api/conversations/:id/participants/:uid */
 async function removeParticipant(req, res) {
   try {
     const participants = await Conversation.getParticipants(req.params.id);
@@ -289,7 +289,7 @@ async function removeParticipant(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── DELETE /api/conversations/:id ──────────────── */
+/* â”€â”€ DELETE /api/conversations/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deleteConversation(req, res) {
   try {
     // Only participants (and only admins among them) can delete
@@ -304,7 +304,7 @@ async function deleteConversation(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── GET /api/conversations/:id/messages ─────────── */
+/* â”€â”€ GET /api/conversations/:id/messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMessages(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -319,7 +319,7 @@ async function getMessages(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── GET /api/conversations/:id/messages/search ──── */
+/* â”€â”€ GET /api/conversations/:id/messages/search â”€â”€â”€â”€ */
 async function searchMessages(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -332,7 +332,7 @@ async function searchMessages(req, res) {
   } catch (err) { return res.status(500).json({ message: "Search failed." }); }
 }
 
-/* ── GET /api/conversations/:id/messages/pinned ──── */
+/* â”€â”€ GET /api/conversations/:id/messages/pinned â”€â”€â”€â”€ */
 async function getPinnedMessages(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -342,7 +342,7 @@ async function getPinnedMessages(req, res) {
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── POST /api/conversations/:id/messages ────────── */
+/* â”€â”€ POST /api/conversations/:id/messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function sendMessage(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -371,7 +371,7 @@ async function sendMessage(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/conversations/:id/messages/:msgId ──── */
+/* â”€â”€ PUT /api/conversations/:id/messages/:msgId â”€â”€â”€â”€ */
 async function editMessage(req, res) {
   try {
     const msg = await Message.findById(req.params.msgId);
@@ -392,7 +392,7 @@ async function editMessage(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── DELETE /api/conversations/:id/messages/:msgId ─ */
+/* â”€â”€ DELETE /api/conversations/:id/messages/:msgId â”€ */
 async function deleteMessage(req, res) {
   try {
     const msg = await Message.findById(req.params.msgId);
@@ -409,7 +409,7 @@ async function deleteMessage(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/conversations/:id/messages/:msgId/read */
+/* â”€â”€ PUT /api/conversations/:id/messages/:msgId/read */
 async function markMessageRead(req, res) {
   try {
     await Message.markRead(req.params.id, req.user.id);
@@ -417,7 +417,7 @@ async function markMessageRead(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/conversations/:id/messages/:msgId/pin */
+/* â”€â”€ PUT /api/conversations/:id/messages/:msgId/pin */
 async function togglePin(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -434,7 +434,7 @@ async function togglePin(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── POST /api/conversations/:id/messages/:msgId/react */
+/* â”€â”€ POST /api/conversations/:id/messages/:msgId/react */
 async function toggleReaction(req, res) {
   try {
     const ok = await assertParticipant(req.params.id, req.user.id, res);
@@ -468,3 +468,4 @@ module.exports = {
   sendMessage, editMessage, deleteMessage,
   markMessageRead, togglePin, toggleReaction,
 };
+

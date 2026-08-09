@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Upload controller
  * Each handler receives req.file (single) from multer memory storage,
  * streams the buffer to Cloudinary via cloudStorageService, then
  * persists the returned URL/public_id into the correct DB table.
  *
  * Replace pattern: new file is uploaded first; old cloud resource is
- * deleted only after the DB update succeeds — no data loss on failure.
+ * deleted only after the DB update succeeds â€” no data loss on failure.
  *
  * Private documents (registration certificates, verification docs)
  * are never returned as raw URLs in public endpoints.
@@ -20,7 +20,7 @@ const Message             = require("../models/Message.model");
 const Investment          = require("../models/Investment.model");
 const VerificationRequest = require("../models/VerificationRequest.model");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function assertFile(req, res) {
   if (!req.file) {
     res.status(400).json({ success: false, message: "No file provided." });
@@ -44,11 +44,11 @@ function uploadSuccess(res, data, extra = {}, status = 200) {
   });
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    PROFILE PHOTOS
    PUT /api/uploads/profile/photo    field: photo
    PUT /api/uploads/profile/cover    field: cover
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadProfilePhoto(req, res) {
   if (!assertFile(req, res)) return;
@@ -57,7 +57,7 @@ async function uploadProfilePhoto(req, res) {
     let oldPublicId = null;
     try {
       const profile = await Profile.findByUserId(req.user.id);
-      // Derive public_id from existing URL if stored — we also stored it in uploads
+      // Derive public_id from existing URL if stored â€” we also stored it in uploads
       // For profile photos we use a deterministic public_id so overwrite is fine
       oldPublicId = null; // cloudinaryUpload uses overwrite:true so no manual delete needed
     } catch (_) {}
@@ -97,10 +97,10 @@ async function uploadCoverPhoto(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STARTUP LOGO
    PUT /api/uploads/startups/:startupId/logo    field: logo
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadStartupLogo(req, res) {
   if (!assertFile(req, res)) return;
@@ -156,11 +156,11 @@ async function uploadStartupLogo(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    PITCH DECK
    POST /api/uploads/startups/:startupId/pitch    field: pitch
    body: { title? }
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadPitchDeck(req, res) {
   if (!assertFile(req, res)) return;
@@ -200,14 +200,14 @@ async function uploadPitchDeck(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STARTUP DOCUMENT
    POST /api/uploads/startups/:startupId/document    field: document
    body: {
      file_type: "startup_document"|"financial_report"|"legal_doc"|"business_plan",
      title?
    }
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadStartupDocument(req, res) {
   if (!assertFile(req, res)) return;
@@ -261,11 +261,11 @@ async function uploadStartupDocument(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    REGISTRATION CERTIFICATE
    POST /api/uploads/startups/:startupId/registration-certificate    field: certificate
-   Private document — stored with is_private=1, not returned in public listings.
-   ════════════════════════════════════════════════ */
+   Private document â€” stored with is_private=1, not returned in public listings.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadRegistrationCertificate(req, res) {
   if (!assertFile(req, res)) return;
@@ -323,7 +323,7 @@ async function uploadRegistrationCertificate(req, res) {
 
     console.log(`[Upload] Registration certificate uploaded for startup ${startup.id} by user ${req.user.id}`);
 
-    // Do NOT return the cloud_url in the response body — it's private
+    // Do NOT return the cloud_url in the response body â€” it's private
     return res.status(201).json({
       success: true,
       message: "Registration certificate uploaded successfully.",
@@ -340,11 +340,11 @@ async function uploadRegistrationCertificate(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STARTUP VIDEO
    POST /api/uploads/startups/:startupId/video    field: video
    body: { title? }
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadStartupVideo(req, res) {
   if (!assertFile(req, res)) return;
@@ -384,11 +384,11 @@ async function uploadStartupVideo(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STARTUP IMAGE
    POST /api/uploads/startups/:startupId/image    field: image
    body: { title? }
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadStartupImage(req, res) {
   if (!assertFile(req, res)) return;
@@ -431,10 +431,10 @@ async function uploadStartupImage(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    POST MEDIA
    POST /api/uploads/posts/:postId/media    field: media
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadPostMedia(req, res) {
   if (!assertFile(req, res)) return;
@@ -463,11 +463,11 @@ async function uploadPostMedia(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MESSAGE ATTACHMENT
    POST /api/uploads/messages/:conversationId    field: attachment
    body: { message? }
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadMessageAttachment(req, res) {
   if (!assertFile(req, res)) return;
@@ -506,10 +506,10 @@ async function uploadMessageAttachment(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    INVESTMENT AGREEMENT
    PUT /api/uploads/investments/:investmentId/agreement    field: agreement
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadAgreement(req, res) {
   if (!assertFile(req, res)) return;
@@ -539,11 +539,11 @@ async function uploadAgreement(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    VERIFICATION DOCUMENT
    PUT /api/uploads/verifications/:requestId/document    field: document
-   Private document — URL is NOT returned directly; use GET /api/files/:id for access.
-   ════════════════════════════════════════════════ */
+   Private document â€” URL is NOT returned directly; use GET /api/files/:id for access.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadVerificationDoc(req, res) {
   if (!assertFile(req, res)) return;
@@ -563,7 +563,7 @@ async function uploadVerificationDoc(req, res) {
 
     console.log(`[Upload] Verification doc uploaded for request ${request.id} by user ${req.user.id}`);
 
-    // Do NOT expose the full cloud_url — it's a sensitive document
+    // Do NOT expose the full cloud_url â€” it's a sensitive document
     return res.json({
       success: true,
       message: "Verification document uploaded.",
@@ -584,12 +584,12 @@ async function uploadVerificationDoc(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    INVESTOR VERIFICATION DOCUMENT
    POST /api/uploads/investor/verification/document    field: document
-   Separate from request-scoped upload — creates/updates the investor's
+   Separate from request-scoped upload â€” creates/updates the investor's
    verification request with the uploaded document.
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadInvestorVerificationDoc(req, res) {
   if (!assertFile(req, res)) return;
@@ -651,10 +651,10 @@ async function uploadInvestorVerificationDoc(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STARTUP TEAM MEMBER PHOTO
    PUT /api/uploads/startups/:startupId/members/:memberId/photo  field: photo
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function uploadMemberPhoto(req, res) {
   if (!assertFile(req, res)) return;
@@ -695,11 +695,11 @@ async function uploadMemberPhoto(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    DELETE FROM CLOUDINARY  (admin only)
    DELETE /api/uploads/resource
    body: { public_id, resource_type? }
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 async function deleteResource(req, res) {
   try {
@@ -741,3 +741,4 @@ module.exports = {
   uploadMemberPhoto,
   deleteResource,
 };
+

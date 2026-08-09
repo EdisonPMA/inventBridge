@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SavedStartup controller
  * Routes:
  *   GET    /api/saved-startups              (my saved list)
@@ -8,7 +8,7 @@
  */
 const SavedStartup = require("../models/SavedStartup.model");
 
-/* ── GET /api/saved-startups ─────────────────────── */
+/* â”€â”€ GET /api/saved-startups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMySavedStartups(req, res) {
   try {
     const { limit = 20, offset = 0 } = req.query;
@@ -21,7 +21,7 @@ async function getMySavedStartups(req, res) {
   }
 }
 
-/* ── POST /api/saved-startups/:startupId ─────────── */
+/* â”€â”€ POST /api/saved-startups/:startupId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function toggleSave(req, res) {
   try {
     const result = await SavedStartup.toggle(req.user.id, req.params.startupId);
@@ -31,7 +31,7 @@ async function toggleSave(req, res) {
   }
 }
 
-/* ── GET /api/saved-startups/:startupId/status ───── */
+/* â”€â”€ GET /api/saved-startups/:startupId/status â”€â”€â”€â”€â”€ */
 async function getSaveStatus(req, res) {
   try {
     const db = require("../config/database");
@@ -47,7 +47,7 @@ async function getSaveStatus(req, res) {
   }
 }
 
-/* ── DELETE /api/saved-startups/:startupId ───────── */
+/* â”€â”€ DELETE /api/saved-startups/:startupId â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function unsaveStartup(req, res) {
   try {
     const result = await SavedStartup.remove(req.user.id, req.params.startupId);
@@ -58,3 +58,4 @@ async function unsaveStartup(req, res) {
 }
 
 module.exports = { getMySavedStartups, toggleSave, getSaveStatus, unsaveStartup };
+

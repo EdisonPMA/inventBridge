@@ -1,6 +1,6 @@
-/**
+﻿/**
  * StartupMember controller
- * Members do NOT require a platform account — stored by name/email.
+ * Members do NOT require a platform account â€” stored by name/email.
  *
  * Routes:
  *   GET    /api/startups/:startupId/members
@@ -11,7 +11,7 @@
 const StartupMember = require("../models/StartupMember.model");
 const Startup       = require("../models/Startup.model");
 
-/* ── auth helper ─────────────────────────────────── */
+/* â”€â”€ auth helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function assertOwnerOrAdmin(startupId, req, res) {
   const startup = await Startup.findById(startupId);
   if (startup.owner_id !== req.user.id && req.user.role !== "admin") {
@@ -21,7 +21,7 @@ async function assertOwnerOrAdmin(startupId, req, res) {
   return startup;
 }
 
-/* ── GET /api/startups/:startupId/members ────────── */
+/* â”€â”€ GET /api/startups/:startupId/members â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMembers(req, res) {
   try {
     const members = await StartupMember.findByStartup(req.params.startupId);
@@ -31,7 +31,7 @@ async function getMembers(req, res) {
   }
 }
 
-/* ── POST /api/startups/:startupId/members ───────── */
+/* â”€â”€ POST /api/startups/:startupId/members â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function addMember(req, res) {
   try {
     const startup = await assertOwnerOrAdmin(req.params.startupId, req, res);
@@ -57,7 +57,7 @@ async function addMember(req, res) {
   }
 }
 
-/* ── PUT /api/startups/:startupId/members/:memberId ─ */
+/* â”€â”€ PUT /api/startups/:startupId/members/:memberId â”€ */
 async function updateMember(req, res) {
   try {
     const startup = await assertOwnerOrAdmin(req.params.startupId, req, res);
@@ -73,7 +73,7 @@ async function updateMember(req, res) {
   }
 }
 
-/* ── DELETE /api/startups/:startupId/members/:memberId ─ */
+/* â”€â”€ DELETE /api/startups/:startupId/members/:memberId â”€ */
 async function removeMember(req, res) {
   try {
     const startup = await assertOwnerOrAdmin(req.params.startupId, req, res);
@@ -87,3 +87,4 @@ async function removeMember(req, res) {
 }
 
 module.exports = { getMembers, addMember, updateMember, removeMember };
+

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * VerificationRequest controller
  * Uses verificationService for all business logic so swapping
- * ManualVerificationService → RDBVerificationService requires no change here.
+ * ManualVerificationService â†’ RDBVerificationService requires no change here.
  *
  * Routes (mounted at /api/verifications):
  *   POST   /                              submit a new request
@@ -27,7 +27,7 @@ const Startup             = require("../models/Startup.model");
 const Notification        = require("../models/Notification.model");
 const vs                  = require("../services/verificationService");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function ok(res, data, status = 200) {
   return res.status(status).json({ success: true, ...data });
 }
@@ -50,16 +50,16 @@ async function notifyAdmins(title, message) {
   } catch { /* non-critical */ }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SUBMISSION ENDPOINTS
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* POST /api/verifications/startup/:startupId ─────── */
+/* POST /api/verifications/startup/:startupId â”€â”€â”€â”€â”€â”€â”€ */
 async function submitStartupVerification(req, res) {
   try {
     const startupId = parseInt(req.params.startupId);
 
-    // Verify ownership — never trust frontend
+    // Verify ownership â€” never trust frontend
     const startup = await Startup.findById(startupId);
     if (startup.owner_id !== req.user.id) {
       return fail(res, "You do not own this startup.", 403);
@@ -112,7 +112,7 @@ async function submitStartupVerification(req, res) {
   }
 }
 
-/* POST /api/verifications/investor ──────────────── */
+/* POST /api/verifications/investor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function submitInvestorVerification(req, res) {
   try {
     const {
@@ -158,7 +158,7 @@ async function submitInvestorVerification(req, res) {
   }
 }
 
-/* POST /api/verifications/:id/resubmit ───────────── */
+/* POST /api/verifications/:id/resubmit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function resubmit(req, res) {
   try {
     const request = await VerificationRequest.findById(req.params.id);
@@ -200,11 +200,11 @@ async function resubmit(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    READ ENDPOINTS
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* GET /api/verifications  (admin) ───────────────── */
+/* GET /api/verifications  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getAllRequests(req, res) {
   try {
     const {
@@ -221,7 +221,7 @@ async function getAllRequests(req, res) {
   }
 }
 
-/* GET /api/verifications/mine ───────────────────── */
+/* GET /api/verifications/mine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyRequests(req, res) {
   try {
     const requests = await VerificationRequest.findByUser(req.user.id);
@@ -231,7 +231,7 @@ async function getMyRequests(req, res) {
   }
 }
 
-/* GET /api/verifications/pending/count  (admin) ─── */
+/* GET /api/verifications/pending/count  (admin) â”€â”€â”€ */
 async function getPendingCount(req, res) {
   try {
     const count = await VerificationRequest.countPending();
@@ -241,7 +241,7 @@ async function getPendingCount(req, res) {
   }
 }
 
-/* GET /api/verifications/startup/:startupId ─────── */
+/* GET /api/verifications/startup/:startupId â”€â”€â”€â”€â”€â”€â”€ */
 async function getStartupVerification(req, res) {
   try {
     const startup = await Startup.findById(req.params.startupId);
@@ -272,7 +272,7 @@ async function getStartupVerification(req, res) {
   }
 }
 
-/* GET /api/verifications/investor/status ────────── */
+/* GET /api/verifications/investor/status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getInvestorVerificationStatus(req, res) {
   try {
     const requests = await VerificationRequest.findByUser(req.user.id);
@@ -292,7 +292,7 @@ async function getInvestorVerificationStatus(req, res) {
   }
 }
 
-/* GET /api/verifications/:id ────────────────────── */
+/* GET /api/verifications/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getRequestById(req, res) {
   try {
     const request = await VerificationRequest.findById(req.params.id);
@@ -311,11 +311,11 @@ async function getRequestById(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ADMIN ACTION ENDPOINTS
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* PATCH /api/verifications/:id/review  (admin) ──── */
+/* PATCH /api/verifications/:id/review  (admin) â”€â”€â”€â”€ */
 async function startReview(req, res) {
   try {
     const request = await VerificationRequest.startReview(req.params.id, req.user.id);
@@ -329,7 +329,7 @@ async function startReview(req, res) {
   }
 }
 
-/* PATCH /api/verifications/:id/approve  (admin) ─── */
+/* PATCH /api/verifications/:id/approve  (admin) â”€â”€â”€ */
 async function approveRequest(req, res) {
   const conn = await db.getConnection();
   try {
@@ -365,12 +365,12 @@ async function approveRequest(req, res) {
       try {
         const startup = await Startup.findById(request.startup_id);
         approvalMessage =
-          `🎉 Your startup "${startup.name}" has been verified and is now publicly visible to investors!` +
+          `ðŸŽ‰ Your startup "${startup.name}" has been verified and is now publicly visible to investors!` +
           ` Investors can now discover, save, follow, and make investment offers.`;
       } catch { /* use generic message */ }
     }
 
-    notifyUser(request.user_id, "Verification Approved ✓", approvalMessage);
+    notifyUser(request.user_id, "Verification Approved âœ“", approvalMessage);
 
     return ok(res, { message: "Verification approved.", data: updated });
   } catch (err) {
@@ -381,7 +381,7 @@ async function approveRequest(req, res) {
   }
 }
 
-/* PATCH /api/verifications/:id/reject  (admin) ──── */
+/* PATCH /api/verifications/:id/reject  (admin) â”€â”€â”€â”€ */
 async function rejectRequest(req, res) {
   const conn = await db.getConnection();
   try {
@@ -438,11 +438,11 @@ async function rejectRequest(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    DOCUMENT & DELETE
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* PUT /api/verifications/:id/document ───────────── */
+/* PUT /api/verifications/:id/document â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateDocument(req, res) {
   try {
     const { document_url } = req.body;
@@ -459,7 +459,7 @@ async function updateDocument(req, res) {
   }
 }
 
-/* DELETE /api/verifications/:id ─────────────────── */
+/* DELETE /api/verifications/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deleteRequest(req, res) {
   try {
     const request = await VerificationRequest.findById(req.params.id);
@@ -492,3 +492,4 @@ module.exports = {
   updateDocument,
   deleteRequest,
 };
+

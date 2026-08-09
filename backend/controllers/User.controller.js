@@ -1,4 +1,4 @@
-/**
+﻿/**
  * User controller
  * Routes: GET /api/users, GET /api/users/:id, PUT /api/users/:id/role,
  *         PUT /api/users/:id/status, PUT /api/users/:id/password,
@@ -6,7 +6,7 @@
  */
 const User = require("../models/User.model");
 
-/* ── GET /api/users/me ───────────────────────────── */
+/* â”€â”€ GET /api/users/me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMe(req, res) {
   try {
     const user = await User.findById(req.user.id);
@@ -16,7 +16,7 @@ async function getMe(req, res) {
   }
 }
 
-/* ── GET /api/users  (admin) ─────────────────────── */
+/* â”€â”€ GET /api/users  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getAllUsers(req, res) {
   try {
     const { role, status, limit = 50, offset = 0 } = req.query;
@@ -31,7 +31,7 @@ async function getAllUsers(req, res) {
   }
 }
 
-/* ── GET /api/users/:id ──────────────────────────── */
+/* â”€â”€ GET /api/users/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getUserById(req, res) {
   try {
     const user = await User.findById(req.params.id);
@@ -46,7 +46,7 @@ async function getUserById(req, res) {
   }
 }
 
-/* ── PUT /api/users/:id/role  (admin) ────────────── */
+/* â”€â”€ PUT /api/users/:id/role  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateRole(req, res) {
   try {
     const { role } = req.body;
@@ -58,7 +58,7 @@ async function updateRole(req, res) {
   }
 }
 
-/* ── PUT /api/users/:id/status  (admin) ─────────── */
+/* â”€â”€ PUT /api/users/:id/status  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateStatus(req, res) {
   try {
     const { status } = req.body;
@@ -70,7 +70,7 @@ async function updateStatus(req, res) {
   }
 }
 
-/* ── PUT /api/users/:id/password ────────────────── */
+/* â”€â”€ PUT /api/users/:id/password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updatePassword(req, res) {
   try {
     // Users can only change their own password; admin can change anyone's
@@ -96,7 +96,7 @@ async function updatePassword(req, res) {
   }
 }
 
-/* ── DELETE /api/users/:id  (admin) ─────────────── */
+/* â”€â”€ DELETE /api/users/:id  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deleteUser(req, res) {
   try {
     const result = await User.remove(req.params.id);
@@ -106,7 +106,7 @@ async function deleteUser(req, res) {
   }
 }
 
-/* ── GET /api/users/stats  (admin) ──────────────── */
+/* â”€â”€ GET /api/users/stats  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getPlatformStats(req, res) {
   try {
     const [stats, byRole] = await Promise.all([
@@ -119,11 +119,11 @@ async function getPlatformStats(req, res) {
   }
 }
 
-/* ── GET /api/users/discover ─────────────────────── */
+/* â”€â”€ GET /api/users/discover â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function discoverPeople(req, res) {
   try {
     const { q, role, country, province, district, page = 1, limit = 12 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 12, 1), 50);
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 12, 1), 50)) | 0;
     const safePage   = Math.max(parseInt(page) || 1, 1);
     const safeOffset = (safePage - 1) * safeLimit;
 
@@ -147,3 +147,4 @@ module.exports = {
   getMe, getAllUsers, getUserById, updateRole, discoverPeople,
   updateStatus, updatePassword, deleteUser, getPlatformStats,
 };
+

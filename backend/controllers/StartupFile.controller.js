@@ -1,16 +1,16 @@
-/**
+﻿/**
  * StartupFile controller
  * Routes:
  *   GET    /api/startups/:startupId/files
- *   POST   /api/startups/:startupId/files      (metadata record only — file already uploaded via /api/uploads)
+ *   POST   /api/startups/:startupId/files      (metadata record only â€” file already uploaded via /api/uploads)
  *   PUT    /api/startups/:startupId/files/:fileId
- *   DELETE /api/startups/:startupId/files/:fileId  — deletes from Cloudinary + MySQL
+ *   DELETE /api/startups/:startupId/files/:fileId  â€” deletes from Cloudinary + MySQL
  */
 const StartupFile    = require("../models/StartupFile.model");
 const Startup        = require("../models/Startup.model");
 const cloudStorage   = require("../services/cloudStorageService");
 
-/* ── Authorization helper ────────────────────────── */
+/* â”€â”€ Authorization helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function assertOwnerOrAdmin(startupId, req, res) {
   const startup = await Startup.findById(startupId);
   if (startup.owner_id !== req.user.id && req.user.role !== "admin") {
@@ -20,7 +20,7 @@ async function assertOwnerOrAdmin(startupId, req, res) {
   return startup;
 }
 
-/* ── GET /api/startups/:startupId/files ─────────── */
+/* â”€â”€ GET /api/startups/:startupId/files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getFiles(req, res) {
   try {
     const { file_type } = req.query;
@@ -55,7 +55,7 @@ async function getFiles(req, res) {
       : await StartupFile.findPublicByStartup(startupId, file_type || null);
 
     // Owner and admin get raw cloud_url; everyone else gets null for private files
-    // — they must call GET /api/files/:fileId to receive a signed URL
+    // â€” they must call GET /api/files/:fileId to receive a signed URL
     const isOwnerOrAdmin = user && (
       user.role === "admin" ||
       (startup ? startup.owner_id === user.id : false)
@@ -74,7 +74,7 @@ async function getFiles(req, res) {
   }
 }
 
-/* ── POST /api/startups/:startupId/files ─────────── */
+/* â”€â”€ POST /api/startups/:startupId/files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /**
  * Create a metadata record after an upload has already succeeded via /api/uploads.
  * The client provides the cloud_url, public_id etc. from the upload response.
@@ -95,7 +95,7 @@ async function uploadFile(req, res) {
       return res.status(400).json({ message: "file_type and cloud_url are required." });
     }
 
-    // Private file types — force is_private regardless of client value
+    // Private file types â€” force is_private regardless of client value
     const forcePrivate = ["registration_certificate", "verification_document"].includes(file_type);
 
     const file = await StartupFile.create({
@@ -130,7 +130,7 @@ async function uploadFile(req, res) {
   }
 }
 
-/* ── PUT /api/startups/:startupId/files/:fileId ──── */
+/* â”€â”€ PUT /api/startups/:startupId/files/:fileId â”€â”€â”€â”€ */
 async function updateFile(req, res) {
   try {
     const startup = await assertOwnerOrAdmin(req.params.startupId, req, res);
@@ -143,7 +143,7 @@ async function updateFile(req, res) {
   }
 }
 
-/* ── DELETE /api/startups/:startupId/files/:fileId ── */
+/* â”€â”€ DELETE /api/startups/:startupId/files/:fileId â”€â”€ */
 /**
  * Safe deletion:
  * 1. Verify ownership
@@ -152,7 +152,7 @@ async function updateFile(req, res) {
  * 4. Delete from Cloudinary using the in-memory public_id
  *
  * Rationale: get public_id before deleting DB row so we can't lose it.
- * If Cloudinary delete fails, log it for admin cleanup — don't fail the user.
+ * If Cloudinary delete fails, log it for admin cleanup â€” don't fail the user.
  */
 async function deleteFile(req, res) {
   try {
@@ -172,7 +172,7 @@ async function deleteFile(req, res) {
       "DELETE FROM startup_files WHERE id = ?", [file.id]
     );
 
-    // Now delete from Cloudinary — safe because we have public_id in memory
+    // Now delete from Cloudinary â€” safe because we have public_id in memory
     if (file.public_id) {
       const cloudResult = await cloudStorage.deleteFile(
         file.public_id,
@@ -183,9 +183,9 @@ async function deleteFile(req, res) {
           `[StartupFile] Cloudinary cleanup failed for public_id "${file.public_id}". ` +
           `DB record deleted. Manual Cloudinary cleanup required. Error: ${cloudResult.error}`
         );
-        // Still return 200 — the DB record is gone; only cloud cleanup failed
+        // Still return 200 â€” the DB record is gone; only cloud cleanup failed
         return res.json({
-          message: "File deleted from database. Cloud resource cleanup failed — see server logs.",
+          message: "File deleted from database. Cloud resource cleanup failed â€” see server logs.",
           cloud_cleanup: false,
           public_id: file.public_id,
         });
@@ -199,3 +199,4 @@ async function deleteFile(req, res) {
 }
 
 module.exports = { getFiles, uploadFile, updateFile, deleteFile };
+

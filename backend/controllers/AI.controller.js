@@ -1,13 +1,13 @@
-/**
- * AI.controller.js — OpenAI-powered endpoints for InventBridge.
+﻿/**
+ * AI.controller.js â€” OpenAI-powered endpoints for InventBridge.
  *
  * Endpoints (all require auth):
  *
  *  POST /api/ai/startup-recommendations
- *    Investor → ranked list of startups best matching their profile/history
+ *    Investor â†’ ranked list of startups best matching their profile/history
  *
  *  POST /api/ai/investor-matches
- *    Startup owner → ranked list of investors likely to be interested
+ *    Startup owner â†’ ranked list of investors likely to be interested
  *
  *  POST /api/ai/startup-analysis
  *    Analyse a startup's profile: strengths, weaknesses, risk score
@@ -32,7 +32,7 @@
 const db       = require("../config/database");
 const ai       = require("../services/aiService");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function q(sql, params = []) {
   const [rows] = await db.execute(sql, params);
   return rows;
@@ -90,10 +90,10 @@ async function discoverStartups({ exclude_id, limit = 20 } = {}) {
   );
 }
 
-/* ════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    1. POST /api/ai/startup-recommendations
-   Investor → ranked startup recommendations
-   ════════════════════════════════════════════════════ */
+   Investor â†’ ranked startup recommendations
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function startupRecommendations(req, res) {
   try {
     if (req.user.role !== "investor") {
@@ -101,7 +101,7 @@ async function startupRecommendations(req, res) {
     }
 
     const { limit = 5, exclude_ids = [] } = req.body;
-    const safeLimit = Math.min(Math.max(parseInt(limit) || 5, 1), 10);
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 5, 1), 10)) | 0;
 
     const { profile, investments, saved } = await getInvestorContext(req.user.id);
     const startups = await discoverStartups({ limit: 20 });
@@ -173,10 +173,10 @@ Rank the top ${safeLimit} startups for this investor. Respond ONLY with valid JS
   }
 }
 
-/* ════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    2. POST /api/ai/investor-matches
-   Startup owner → ranked investor matches
-   ════════════════════════════════════════════════════ */
+   Startup owner â†’ ranked investor matches
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function investorMatches(req, res) {
   try {
     if (!["inventor", "admin"].includes(req.user.role)) {
@@ -192,7 +192,7 @@ async function investorMatches(req, res) {
       return res.status(403).json({ message: "Not authorized to analyse this startup." });
     }
 
-    const safeLimit = Math.min(Math.max(parseInt(limit) || 5, 1), 10);
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 5, 1), 10)) | 0;
 
     // Fetch active investors + their investment history
     const investors = await q(
@@ -272,10 +272,10 @@ Rank the top ${safeLimit} investors most likely to be interested in this startup
   }
 }
 
-/* ════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    3. POST /api/ai/startup-analysis
    Deep analysis of a startup profile
-   ════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function startupAnalysis(req, res) {
   try {
     const { startup_id } = req.body;
@@ -337,10 +337,10 @@ Analyse this startup thoroughly. Respond ONLY with valid JSON:
   }
 }
 
-/* ════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    4. POST /api/ai/explain-recommendation
    Why is THIS startup recommended to THIS investor?
-   ════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function explainRecommendation(req, res) {
   try {
     const { startup_id, investor_id } = req.body;
@@ -402,10 +402,10 @@ Explain in detail why this startup is (or isn't) a good match for this investor.
   }
 }
 
-/* ════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    5. POST /api/ai/profile-suggestions
    Actionable improvements for a startup or investor profile
-   ════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function profileSuggestions(req, res) {
   try {
     const { startup_id } = req.body;
@@ -466,10 +466,10 @@ Respond ONLY with valid JSON:
   }
 }
 
-/* ════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    6. POST /api/ai/startup-insights
    Ecosystem insights (admin/org) or single-startup insights (inventor)
-   ════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function startupInsights(req, res) {
   try {
     const { startup_id } = req.body;
@@ -478,7 +478,7 @@ async function startupInsights(req, res) {
     let contextStr, insightScope;
 
     if (startup_id) {
-      // Single startup insights — owner or admin
+      // Single startup insights â€” owner or admin
       const startup = await getStartup(startup_id);
       if (!startup) return res.status(404).json({ message: "Startup not found." });
       if (startup.owner_id !== req.user.id && !["admin", "organization"].includes(role)) {
@@ -559,3 +559,4 @@ module.exports = {
   profileSuggestions,
   startupInsights,
 };
+

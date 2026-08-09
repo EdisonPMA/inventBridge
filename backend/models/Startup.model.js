@@ -1,10 +1,10 @@
-/**
- * Startup model — table: startups
+﻿/**
+ * Startup model â€” table: startups
  * Core entity of the platform. Rich filtering for discovery.
  */
 const db = require("../config/database");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
@@ -34,7 +34,7 @@ const PUBLIC_FIELDS = `
   p.profile_photo AS owner_photo, p.verification_level AS owner_verification
 `;
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({
   owner_id, category_id, name, description, problem, solution,
   mission, vision, business_model, revenue_model, industry, stage,
@@ -67,7 +67,7 @@ async function create({
   return created;
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     `SELECT ${PUBLIC_FIELDS} FROM startups s ${JOIN_PROFILE} WHERE s.id = ? LIMIT 1`,
@@ -129,7 +129,7 @@ async function findAll({
   return { rows, total };
 }
 
-/* ── UPDATE ──────────────────────────────────────── */
+/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function update(id, fields = {}) {
   const allowed = [
     "category_id", "name", "description", "problem", "solution",
@@ -179,15 +179,15 @@ async function updateAiScore(id, ai_score) {
 
 /**
  * Compute and persist ai_score for a startup.
- * Score (0–100) based on profile completeness, social signals, and funding clarity.
- * Called fire-and-forget after create/update — never blocks a response.
+ * Score (0â€“100) based on profile completeness, social signals, and funding clarity.
+ * Called fire-and-forget after create/update â€” never blocks a response.
  *
  * Breakdown (total 100 pts):
- *   Profile fields  — 40 pts  (description, problem, solution, mission, vision, business_model, revenue_model)
- *   Media / files   — 20 pts  (logo, registration cert)
- *   Funding clarity — 15 pts  (funding_required > 0, equity_offered > 0)
- *   Social signals  — 15 pts  (followers, saves — capped at 10 each)
- *   Verification    — 10 pts  (verified = 10, pending = 5)
+ *   Profile fields  â€” 40 pts  (description, problem, solution, mission, vision, business_model, revenue_model)
+ *   Media / files   â€” 20 pts  (logo, registration cert)
+ *   Funding clarity â€” 15 pts  (funding_required > 0, equity_offered > 0)
+ *   Social signals  â€” 15 pts  (followers, saves â€” capped at 10 each)
+ *   Verification    â€” 10 pts  (verified = 10, pending = 5)
  */
 async function refreshAiScore(id) {
   try {
@@ -232,14 +232,14 @@ async function refreshAiScore(id) {
   } catch { /* never block */ }
 }
 
-/* ── DELETE ──────────────────────────────────────── */
+/* â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function remove(id) {
   const [result] = await db.execute("DELETE FROM startups WHERE id = ?", [id]);
   if (!result.affectedRows) throw new Error("Startup not found.");
   return { message: "Startup deleted." };
 }
 
-// ── 1. Whitelisted sort map — never interpolate raw strings from callers ──
+// â”€â”€ 1. Whitelisted sort map â€” never interpolate raw strings from callers â”€â”€
 const ALLOWED_SORTS = {
   newest:       "s.created_at DESC",
   oldest:       "s.created_at ASC",
@@ -249,7 +249,7 @@ const ALLOWED_SORTS = {
   name:         "s.name ASC",
 };
 
-/* ── DISCOVER (investor-facing, published + verified first) ─────── */
+/* â”€â”€ DISCOVER (investor-facing, published + verified first) â”€â”€â”€â”€â”€â”€â”€ */
 async function discover({
   q, category_id, industry, stage,
   country, province, district,
@@ -257,10 +257,10 @@ async function discover({
   orderBy = "newest",
   limit = 12, offset = 0,
 } = {}) {
-  // Whitelist sort — NEVER interpolate raw SQL from callers
+  // Whitelist sort â€” NEVER interpolate raw SQL from callers
   const safeOrder = ALLOWED_SORTS[orderBy] || ALLOWED_SORTS.newest;
-  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 12, 1), 50);
-  const safeOffset = Math.max(parseInt(offset) || 0, 0);
+  const safeLimit  = (Math.min(Math.max(parseInt(limit) || 12, 1), 50)) | 0;
+  const safeOffset = (Math.max(parseInt(offset) || 0, 0)) | 0;
 
   // Always restrict to published startups for discovery
   const conditions = ["s.status = 'published'"];
@@ -320,3 +320,4 @@ module.exports = {
   findAll, discover, update, updateStatus, updateVerification,
   updateAiScore, refreshAiScore, remove,
 };
+

@@ -1,8 +1,8 @@
-/**
+﻿/**
  * GoogleAuth.controller.js
  *
- * GET /api/auth/google           — redirect to Google consent screen
- * GET /api/auth/google/callback  — handle OAuth callback, issue JWT, redirect frontend
+ * GET /api/auth/google           â€” redirect to Google consent screen
+ * GET /api/auth/google/callback  â€” handle OAuth callback, issue JWT, redirect frontend
  *
  * Security: the access token is NOT placed in the redirect URL.
  * Instead a short-lived one-time code (OTC) is stored server-side in a Map,
@@ -27,9 +27,9 @@ const CLIENT_URL = (() => {
   return url || "http://localhost:5173";
 })();
 
-/* ── One-time code store (in-memory, TTL 2 min, max 500 entries) ───── */
+/* â”€â”€ One-time code store (in-memory, TTL 2 min, max 500 entries) â”€â”€â”€â”€â”€ */
 const OTC_MAX = 500;
-const otcStore = new Map(); // code → { user, accessToken, expiresAt }
+const otcStore = new Map(); // code â†’ { user, accessToken, expiresAt }
 
 function storeOtc(user, accessToken) {
   // Evict oldest entry if at capacity to prevent unbounded memory growth
@@ -64,14 +64,14 @@ function userPayload(u) {
   };
 }
 
-/* ── GET /api/auth/google ───────────────────────────── */
+/* â”€â”€ GET /api/auth/google â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const initiateGoogleAuth = passport.authenticate("google", {
   scope:   ["profile", "email"],
   prompt:  "select_account",
   session: false,
 });
 
-/* ── GET /api/auth/google/callback ──────────────────── */
+/* â”€â”€ GET /api/auth/google/callback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function handleGoogleCallback(req, res, next) {
   passport.authenticate("google", { session: false }, (err, user, info) => {
     if (err) {
@@ -89,7 +89,7 @@ function handleGoogleCallback(req, res, next) {
       const accessToken  = generateToken(user);
       const refreshToken = generateRefreshToken(user);
 
-      // httpOnly Secure cookie — same as email/password login
+      // httpOnly Secure cookie â€” same as email/password login
       setRefreshCookie(res, refreshToken);
 
       // Store a short-lived one-time code; redirect only the code (not the token)
@@ -105,7 +105,7 @@ function handleGoogleCallback(req, res, next) {
   })(req, res, next);
 }
 
-/* ── POST /api/auth/google/exchange ─────────────────── */
+/* â”€â”€ POST /api/auth/google/exchange â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 // Frontend POSTs the one-time code; receives the access token in JSON (never in URL).
 function exchangeOtc(req, res) {
   const { code } = req.body;
@@ -123,3 +123,4 @@ function exchangeOtc(req, res) {
 }
 
 module.exports = { initiateGoogleAuth, handleGoogleCallback, exchangeOtc };
+

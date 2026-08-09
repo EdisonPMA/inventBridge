@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Profile controller
  * Routes: GET /api/profiles/me, GET /api/profiles/:userId,
  *         PUT /api/profiles/me, PUT /api/profiles/me/photo
  */
 const Profile = require("../models/Profile.model");
 
-/* ── GET /api/profiles/me ────────────────────────── */
+/* â”€â”€ GET /api/profiles/me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyProfile(req, res) {
   try {
     const profile = await Profile.findByUserId(req.user.id);
@@ -15,7 +15,7 @@ async function getMyProfile(req, res) {
   }
 }
 
-/* ── GET /api/profiles/:userId ───────────────────── */
+/* â”€â”€ GET /api/profiles/:userId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getProfileByUserId(req, res) {
   try {
     const profile = await Profile.findByUserId(req.params.userId);
@@ -25,7 +25,7 @@ async function getProfileByUserId(req, res) {
   }
 }
 
-/* ── PUT /api/profiles/me ────────────────────────── */
+/* â”€â”€ PUT /api/profiles/me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateMyProfile(req, res) {
   try {
     const allowed = [
@@ -46,7 +46,7 @@ async function updateMyProfile(req, res) {
   }
 }
 
-/* ── PUT /api/profiles/me/photo ──────────────────── */
+/* â”€â”€ PUT /api/profiles/me/photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updatePhoto(req, res) {
   try {
     const { profile_photo, cover_photo } = req.body;
@@ -60,7 +60,7 @@ async function updatePhoto(req, res) {
   }
 }
 
-/* ── PUT /api/profiles/:userId/verification  (admin) */
+/* â”€â”€ PUT /api/profiles/:userId/verification  (admin) */
 async function updateVerificationLevel(req, res) {
   try {
     const { level } = req.body;
@@ -76,3 +76,4 @@ module.exports = {
   getMyProfile, getProfileByUserId,
   updateMyProfile, updatePhoto, updateVerificationLevel,
 };
+

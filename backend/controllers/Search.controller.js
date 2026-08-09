@@ -1,19 +1,19 @@
-/**
- * Global search — enhanced multi-strategy matching.
+﻿/**
+ * Global search â€” enhanced multi-strategy matching.
  *
  * Strategy:
- *  1–3 chars  → pure LIKE %q% across key fields (MySQL ft_min_word_len default = 4,
- *               so FULLTEXT won't index short words — LIKE handles everything short)
- *  4+ chars   → FULLTEXT prefix wildcard (boolean mode +word*) UNION LIKE %q% infix
+ *  1â€“3 chars  â†’ pure LIKE %q% across key fields (MySQL ft_min_word_len default = 4,
+ *               so FULLTEXT won't index short words â€” LIKE handles everything short)
+ *  4+ chars   â†’ FULLTEXT prefix wildcard (boolean mode +word*) UNION LIKE %q% infix
  *               FULLTEXT hits ranked higher; LIKE catches mid-word matches
- *  Multi-word → Each word becomes +term* boolean FULLTEXT AND; also LIKE on full phrase
+ *  Multi-word â†’ Each word becomes +term* boolean FULLTEXT AND; also LIKE on full phrase
  *
  * Examples:
- *   "a"         → matches AgriTech, AI, Analyst…
- *   "agr"       → LIKE %agr% → AgriTech, Agriculture…
- *   "agri"      → FULLTEXT +agri* ∪ LIKE %agri%
- *   "gritech"   → LIKE %gritech%
- *   "agri tech" → FULLTEXT +agri* +tech* ∪ LIKE %agri tech%
+ *   "a"         â†’ matches AgriTech, AI, Analystâ€¦
+ *   "agr"       â†’ LIKE %agr% â†’ AgriTech, Agricultureâ€¦
+ *   "agri"      â†’ FULLTEXT +agri* âˆª LIKE %agri%
+ *   "gritech"   â†’ LIKE %gritech%
+ *   "agri tech" â†’ FULLTEXT +agri* +tech* âˆª LIKE %agri tech%
  *
  * GET /api/search?q=&type=&stage=&country=&limit=
  */
@@ -21,7 +21,7 @@ const db = require("../config/database");
 
 const SAFE_LIMIT = (v) => Math.min(Math.max(parseInt(v) || 8, 1), 30);
 
-/** Build boolean mode query string: "agri tech" → "+agri* +tech*" */
+/** Build boolean mode query string: "agri tech" â†’ "+agri* +tech*" */
 function buildBooleanQuery(q) {
   return q.trim().split(/\s+/).filter(Boolean).map(w => `+${w}*`).join(" ");
 }
@@ -32,7 +32,7 @@ function mergeById(a, b) {
   return [...a, ...b.filter(r => !seen.has(r.id))];
 }
 
-/* ── Startup search ──────────────────────────────── */
+/* â”€â”€ Startup search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function searchStartups(q, { stage, country, limit }) {
   const base   = ["s.status = 'published'"];
   const bParams = [];
@@ -97,7 +97,7 @@ async function searchStartups(q, { stage, country, limit }) {
   return rows;
 }
 
-/* ── People search ───────────────────────────────── */
+/* â”€â”€ People search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function searchPeople(q, { country, limit }) {
   const base   = ["u.status = 'active'", "u.role != 'admin'"];
   const bParams = [];
@@ -152,7 +152,7 @@ async function searchPeople(q, { country, limit }) {
   return rows;
 }
 
-/* ── Posts search ────────────────────────────────── */
+/* â”€â”€ Posts search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function searchPosts(q, { limit }) {
   const pct   = `%${q}%`;
   const boolQ = buildBooleanQuery(q);
@@ -201,7 +201,7 @@ async function searchPosts(q, { limit }) {
   return rows;
 }
 
-/* ── GET /api/search ─────────────────────────────── */
+/* â”€â”€ GET /api/search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function globalSearch(req, res) {
   try {
     const { q, type = "all", stage, country, limit } = req.query;
@@ -238,3 +238,4 @@ async function globalSearch(req, res) {
 }
 
 module.exports = { globalSearch };
+

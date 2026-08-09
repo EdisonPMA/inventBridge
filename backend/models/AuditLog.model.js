@@ -1,11 +1,11 @@
-/**
- * AuditLog model — table: audit_logs
+﻿/**
+ * AuditLog model â€” table: audit_logs
  * Records sensitive admin actions for accountability.
  * Never stores passwords, JWT tokens, or secrets.
  */
 const db = require("../config/database");
 
-/* ── CREATE TABLE ────────────────────────────────── */
+/* â”€â”€ CREATE TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function ensureTable(connection) {
   await connection.execute(`
     CREATE TABLE IF NOT EXISTS audit_logs (
@@ -25,7 +25,7 @@ async function ensureTable(connection) {
   `);
 }
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function log({ admin_id, action, target_type = null, target_id = null, details = null }) {
   await db.execute(
     `INSERT INTO audit_logs (admin_id, action, target_type, target_id, details)
@@ -35,7 +35,7 @@ async function log({ admin_id, action, target_type = null, target_id = null, det
   ).catch(() => {}); // never block the main response
 }
 
-/* ── READ (admin only) ───────────────────────────── */
+/* â”€â”€ READ (admin only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findAll({ admin_id, action, target_type, page = 1, limit = 30 } = {}) {
   const conditions = [];
   const params     = [];
@@ -44,8 +44,8 @@ async function findAll({ admin_id, action, target_type, page = 1, limit = 30 } =
   if (target_type) { conditions.push("al.target_type = ?"); params.push(target_type); }
 
   const where      = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-  const safeLimit  = Math.min(Math.max(parseInt(limit) || 30, 1), 100);
-  const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+  const safeLimit  = (Math.min(Math.max(parseInt(limit) || 30, 1), 100)) | 0;
+  const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
   const [rows] = await db.execute(
     `SELECT al.*, p.first_name, p.last_name
@@ -63,3 +63,4 @@ async function findAll({ admin_id, action, target_type, page = 1, limit = 30 } =
 }
 
 module.exports = { ensureTable, log, findAll };
+

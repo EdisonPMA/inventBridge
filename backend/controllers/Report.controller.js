@@ -1,12 +1,12 @@
-/**
- * Report controller — public user reporting endpoints.
+﻿/**
+ * Report controller â€” public user reporting endpoints.
  * Reporter identity always comes from JWT (req.user.id).
  */
 const Report       = require("../models/Report.model");
 const Notification = require("../models/Notification.model");
 const db           = require("../config/database");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const TARGET_VALIDATORS = {
   startup:    (id) => db.execute("SELECT id FROM startups WHERE id = ?",     [id]),
   user:       (id) => db.execute("SELECT id FROM users WHERE id = ?",         [id]),
@@ -32,7 +32,7 @@ async function notifyAdmins(title, message) {
   } catch { /* non-critical */ }
 }
 
-/* ── POST /api/reports ───────────────────────────── */
+/* â”€â”€ POST /api/reports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function createReport(req, res) {
   try {
     const { targetType, targetId, reason, description } = req.body;
@@ -77,7 +77,7 @@ async function createReport(req, res) {
   }
 }
 
-/* ── GET /api/reports/mine ───────────────────────── */
+/* â”€â”€ GET /api/reports/mine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyReports(req, res) {
   try {
     const [rows] = await db.execute(
@@ -91,3 +91,4 @@ async function getMyReports(req, res) {
 }
 
 module.exports = { createReport, getMyReports };
+

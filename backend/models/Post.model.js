@@ -1,5 +1,5 @@
-/**
- * Post model — table: posts + post_tags
+﻿/**
+ * Post model â€” table: posts + post_tags
  * Social feed posts, optionally linked to a startup.
  * Supports tagging specific users (post_tags table).
  */
@@ -14,9 +14,9 @@ const WITH_AUTHOR = `
   (SELECT COUNT(*) FROM post_comments pc WHERE pc.post_id = po.id) AS comment_count
 `;
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-/** Fetch tagged users for a list of post IDs. Returns map: post_id → [...] */
+/** Fetch tagged users for a list of post IDs. Returns map: post_id â†’ [...] */
 async function fetchTags(postIds) {
   if (!postIds.length) return {};
   try {
@@ -35,12 +35,12 @@ async function fetchTags(postIds) {
     }
     return map;
   } catch {
-    // post_tags table may not exist yet — return empty map rather than crashing
+    // post_tags table may not exist yet â€” return empty map rather than crashing
     return {};
   }
 }
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({
   user_id, startup_id = null, content,
   image_url = null, video_url = null, visibility = "public",
@@ -70,7 +70,7 @@ async function create({
   return post;
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     `SELECT ${WITH_AUTHOR}
@@ -100,8 +100,8 @@ async function findAll({ user_id, startup_id, visibility, search, limit = 20, of
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 20, 1), 100);
-  const safeOffset = Math.max(parseInt(offset) || 0, 0);
+  const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+  const safeOffset = (Math.max(parseInt(offset) || 0, 0)) | 0;
 
   const [rows] = await db.execute(
     `SELECT ${WITH_AUTHOR}
@@ -135,8 +135,8 @@ async function feed({ limit = 20, offset = 0 } = {}) {
  * Personalised feed for an authenticated viewer.
  */
 async function personalFeed(viewer_id, { limit = 20, offset = 0 } = {}) {
-  const safeLimit  = Math.min(Math.max(parseInt(limit)  || 20, 1), 50);
-  const safeOffset = Math.max(parseInt(offset) || 0, 0);
+  const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 50)) | 0;
+  const safeOffset = (Math.max(parseInt(offset) || 0, 0)) | 0;
 
   const feedWhere = `
     WHERE (
@@ -193,7 +193,7 @@ async function personalFeed(viewer_id, { limit = 20, offset = 0 } = {}) {
   return { rows, total };
 }
 
-/* ── UPDATE ──────────────────────────────────────── */
+/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function update(id, { content, image_url, video_url, visibility }) {
   const fields = [];
   const values = [];
@@ -209,7 +209,7 @@ async function update(id, { content, image_url, video_url, visibility }) {
   return findById(id);
 }
 
-/* ── archive (soft-delete) ───────────────────────── */
+/* â”€â”€ archive (soft-delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function archive(id) {
   const [result] = await db.execute(
     "UPDATE posts SET visibility = 'archived' WHERE id = ?", [id]
@@ -226,7 +226,7 @@ async function restore(id) {
   return { message: "Post restored." };
 }
 
-/* ── DELETE ──────────────────────────────────────── */
+/* â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function remove(id) {
   const [result] = await db.execute("DELETE FROM posts WHERE id = ?", [id]);
   if (!result.affectedRows) throw new Error("Post not found.");
@@ -234,3 +234,4 @@ async function remove(id) {
 }
 
 module.exports = { create, findById, findAll, feed, personalFeed, update, archive, restore, remove };
+

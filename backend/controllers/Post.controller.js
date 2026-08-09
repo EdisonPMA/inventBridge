@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Post controller
  * Routes:
  *   POST   /api/posts
@@ -17,7 +17,7 @@ const Post        = require("../models/Post.model");
 const PostComment  = require("../models/PostComment.model");
 const PostLike     = require("../models/PostLike.model");
 
-/* ── POST /api/posts ─────────────────────────────── */
+/* â”€â”€ POST /api/posts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function createPost(req, res) {
   try {
     const { content, startup_id, image_url, video_url, visibility } = req.body;
@@ -40,7 +40,7 @@ async function createPost(req, res) {
       }
     }
 
-    // Investors may optionally tag a startup (no ownership check — they invest, not own)
+    // Investors may optionally tag a startup (no ownership check â€” they invest, not own)
     // Other roles (organization, admin) can post without a startup
 
     const post = await Post.create({
@@ -74,13 +74,13 @@ async function createPost(req, res) {
   }
 }
 
-/* ── GET /api/posts ──────────────────────────────── */
+/* â”€â”€ GET /api/posts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getFeed(req, res) {
   try {
     const { user_id, startup_id, search, page = 1, limit = 20 } = req.query;
-    const safeLimit  = Math.min(Math.max(parseInt(limit)  || 20, 1), 50);
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 50)) | 0;
     const safePage   = Math.max(parseInt(page)   || 1, 1);
-    const safeOffset = (safePage - 1) * safeLimit;
+    const safeOffset = ((safePage - 1) * safeLimit) | 0;
 
     // If search query is provided, skip personalised feed and search directly
     if (search && search.trim()) {
@@ -143,7 +143,7 @@ async function getFeed(req, res) {
   }
 }
 
-/* ── GET /api/posts/:id ──────────────────────────── */
+/* â”€â”€ GET /api/posts/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getPostById(req, res) {
   try {
     const post = await Post.findById(req.params.id);
@@ -153,7 +153,7 @@ async function getPostById(req, res) {
   }
 }
 
-/* ── PUT /api/posts/:id ──────────────────────────── */
+/* â”€â”€ PUT /api/posts/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updatePost(req, res) {
   try {
     const post = await Post.findById(req.params.id);
@@ -167,7 +167,7 @@ async function updatePost(req, res) {
   }
 }
 
-/* ── DELETE /api/posts/:id ───────────────────────── */
+/* â”€â”€ DELETE /api/posts/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deletePost(req, res) {
   try {
     const post = await Post.findById(req.params.id);
@@ -181,7 +181,7 @@ async function deletePost(req, res) {
   }
 }
 
-/* ── PATCH /api/posts/:id/archive ────────────────── */
+/* â”€â”€ PATCH /api/posts/:id/archive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function archivePost(req, res) {
   try {
     const post = await Post.findById(req.params.id);
@@ -195,7 +195,7 @@ async function archivePost(req, res) {
   }
 }
 
-/* ── PATCH /api/posts/:id/restore ────────────────── */
+/* â”€â”€ PATCH /api/posts/:id/restore â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function restorePost(req, res) {
   try {
     const post = await Post.findById(req.params.id);
@@ -209,7 +209,7 @@ async function restorePost(req, res) {
   }
 }
 
-/* ── GET /api/posts/mine/archived ────────────────── */
+/* â”€â”€ GET /api/posts/mine/archived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyArchivedPosts(req, res) {
   try {
     const result = await Post.findAll({
@@ -222,7 +222,7 @@ async function getMyArchivedPosts(req, res) {
   }
 }
 
-/* ── POST /api/posts/:id/like ────────────────────── */
+/* â”€â”€ POST /api/posts/:id/like â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function toggleLike(req, res) {
   try {
     const result = await PostLike.toggle(req.params.id, req.user.id);
@@ -261,7 +261,7 @@ async function toggleLike(req, res) {
   }
 }
 
-/* ── GET /api/posts/:id/likes ────────────────────── */
+/* â”€â”€ GET /api/posts/:id/likes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getLikes(req, res) {
   try {
     const { limit = 20, offset = 0 } = req.query;
@@ -274,7 +274,7 @@ async function getLikes(req, res) {
   }
 }
 
-/* ── GET /api/posts/:id/comments ─────────────────── */
+/* â”€â”€ GET /api/posts/:id/comments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getComments(req, res) {
   try {
     const { limit = 50, offset = 0 } = req.query;
@@ -287,7 +287,7 @@ async function getComments(req, res) {
   }
 }
 
-/* ── POST /api/posts/:id/comments ────────────────── */
+/* â”€â”€ POST /api/posts/:id/comments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function addComment(req, res) {
   try {
     const { comment } = req.body;
@@ -332,7 +332,7 @@ async function addComment(req, res) {
   }
 }
 
-/* ── PUT /api/posts/:postId/comments/:commentId ──── */
+/* â”€â”€ PUT /api/posts/:postId/comments/:commentId â”€â”€â”€â”€ */
 async function updateComment(req, res) {
   try {
     const existing = await PostComment.findById(req.params.commentId);
@@ -346,7 +346,7 @@ async function updateComment(req, res) {
   }
 }
 
-/* ── DELETE /api/posts/:postId/comments/:commentId ─ */
+/* â”€â”€ DELETE /api/posts/:postId/comments/:commentId â”€ */
 async function deleteComment(req, res) {
   try {
     const existing = await PostComment.findById(req.params.commentId);
@@ -360,7 +360,7 @@ async function deleteComment(req, res) {
   }
 }
 
-/* ── POST /api/posts/:id/repost ──────────────────── */
+/* â”€â”€ POST /api/posts/:id/repost â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function repostPost(req, res) {
   try {
     const original = await Post.findById(req.params.id);
@@ -370,12 +370,12 @@ async function repostPost(req, res) {
       return res.status(403).json({ message: "You cannot repost your own post." });
     }
 
-    // Inventors must link posts to a startup — inherit from original
+    // Inventors must link posts to a startup â€” inherit from original
     // The original startup_id carries over automatically
     const caption    = (req.body.caption || "").trim();
     const repostText = caption
-      ? `${caption}\n\n─── Reposted from ${original.first_name || "someone"} ───\n${original.content}`
-      : `─── Reposted from ${original.first_name || "someone"} ───\n${original.content}`;
+      ? `${caption}\n\nâ”€â”€â”€ Reposted from ${original.first_name || "someone"} â”€â”€â”€\n${original.content}`
+      : `â”€â”€â”€ Reposted from ${original.first_name || "someone"} â”€â”€â”€\n${original.content}`;
 
     const post = await Post.create({
       user_id:    req.user.id,
@@ -405,3 +405,5 @@ module.exports = {
   toggleLike, getLikes, getLikedStatus,
   getComments, addComment, updateComment, deleteComment,
 };
+
+

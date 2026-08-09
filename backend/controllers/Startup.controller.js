@@ -1,14 +1,14 @@
-/**
+﻿/**
  * Startup controller
  *
  * Key rules enforced here:
- *  1. createStartup   — basic required fields only (name + category).
+ *  1. createStartup   â€” basic required fields only (name + category).
  *                       Full completeness is gated at submitForVerification.
- *  2. updateStartup   — if the startup is currently "verified" / "published",
+ *  2. updateStartup   â€” if the startup is currently "verified" / "published",
  *                       any edit by the owner immediately sets it back to
  *                       draft + verification_status = pending and notifies the
  *                       founder. This ensures no unreviewed content goes live.
- *  3. submitForVerification — validates profile completeness AND checks that
+ *  3. submitForVerification â€” validates profile completeness AND checks that
  *                       required supporting documents are uploaded before
  *                       allowing the startup to enter the review queue.
  */
@@ -24,7 +24,7 @@ const {
 } = require("../utils/email");
 const db = require("../config/database");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 /** Required documents that must be uploaded before a startup can be submitted. */
 const REQUIRED_DOCS = [
@@ -56,7 +56,7 @@ async function getFounderContact(userId) {
   return row || null;
 }
 
-/* ── POST /api/startups ──────────────────────────── */
+/* â”€â”€ POST /api/startups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function createStartup(req, res) {
   try {
     const { category_id, name } = req.body;
@@ -77,7 +77,7 @@ async function createStartup(req, res) {
   }
 }
 
-/* ── GET /api/startups ───────────────────────────── */
+/* â”€â”€ GET /api/startups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getAllStartups(req, res) {
   try {
     const {
@@ -94,7 +94,7 @@ async function getAllStartups(req, res) {
   }
 }
 
-/* ── GET /api/startups/discover ─────────────────── */
+/* â”€â”€ GET /api/startups/discover â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function discoverStartups(req, res) {
   try {
     const {
@@ -109,7 +109,7 @@ async function discoverStartups(req, res) {
       funding_high: "s.funding_required DESC",
     };
     const orderBy    = allowedSorts[sort] || allowedSorts.newest;
-    const safeLimit  = Math.min(Math.max(parseInt(limit) || 12, 1), 50);
+    const safeLimit  = (Math.min(Math.max(parseInt(limit) || 12, 1), 50)) | 0;
     const safePage   = Math.max(parseInt(page) || 1, 1);
     const safeOffset = (safePage - 1) * safeLimit;
     const result = await Startup.discover({
@@ -126,14 +126,14 @@ async function discoverStartups(req, res) {
   }
 }
 
-/* ── GET /api/startups/mine ──────────────────────── */
+/* â”€â”€ GET /api/startups/mine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getMyStartups(req, res) {
   try {
     return res.json({ startups: await Startup.findByOwner(req.user.id) });
   } catch (err) { return res.status(500).json({ message: err.message }); }
 }
 
-/* ── GET /api/startups/:id ───────────────────────── */
+/* â”€â”€ GET /api/startups/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getStartupById(req, res) {
   try {
     const startup     = await Startup.findById(req.params.id);
@@ -147,7 +147,7 @@ async function getStartupById(req, res) {
   } catch (err) { return res.status(404).json({ message: err.message }); }
 }
 
-/* ── GET /api/startups/slug/:slug ────────────────── */
+/* â”€â”€ GET /api/startups/slug/:slug â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getStartupBySlug(req, res) {
   try {
     const startup     = await Startup.findBySlug(req.params.slug);
@@ -161,10 +161,10 @@ async function getStartupBySlug(req, res) {
   } catch (err) { return res.status(404).json({ message: err.message }); }
 }
 
-/* ── PUT /api/startups/:id ───────────────────────── */
+/* â”€â”€ PUT /api/startups/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /**
  * If a verified/published startup is edited by its owner, it is automatically
- * pulled from public view (status → draft, verification_status → pending) and
+ * pulled from public view (status â†’ draft, verification_status â†’ pending) and
  * the founder is notified that re-verification is required.
  *
  * Admins can edit without triggering re-verification (they are the verifiers).
@@ -180,7 +180,7 @@ async function updateStartup(req, res) {
 
     const updated = await Startup.update(req.params.id, req.body);
 
-    // ── Re-verification gate ────────────────────────
+    // â”€â”€ Re-verification gate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // If the owner edits a verified/published startup, pull it from public view.
     if (isOwner && !isAdmin &&
         (startup.verification_status === "verified" || startup.status === "published")) {
@@ -192,7 +192,7 @@ async function updateStartup(req, res) {
 
       Notification.create({
         user_id: startup.owner_id,
-        title:   "Startup Unpublished — Re-verification Required",
+        title:   "Startup Unpublished â€” Re-verification Required",
         message: `Your startup "${startup.name}" was edited and has been temporarily removed from public view. Please re-submit it for verification to make it live again.`,
         type:    "verification",
       }).catch(() => {});
@@ -203,19 +203,19 @@ async function updateStartup(req, res) {
         const { sendEmail } = require("../utils/email");
         sendEmail({
           to:      row.email,
-          subject: `"${startup.name}" has been unpublished — re-verification required`,
+          subject: `"${startup.name}" has been unpublished â€” re-verification required`,
           text:    `Hi ${name},\n\nYou edited your startup "${startup.name}" which was previously verified. For security, it has been temporarily removed from public view.\n\nPlease log in and re-submit it for verification to restore public access.\n\nInventBridge Team`,
           html: `
             <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1e293b">
-              <h2 style="color:#d97706">Re-verification Required ⚠️</h2>
+              <h2 style="color:#d97706">Re-verification Required âš ï¸</h2>
               <p>Hi <strong>${name}</strong>,</p>
               <p>You recently edited your startup <strong>"${startup.name}"</strong>, which was previously verified.</p>
               <p>For security, the startup has been <strong>temporarily removed from public view</strong>. Please re-submit it for verification to restore investor access.</p>
               <a href="${process.env.CLIENT_ORIGIN || "http://localhost:5173"}/inventor/startups/${startup.id}/edit"
                  style="display:inline-block;background:#d97706;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600">
-                Re-submit for Verification →
+                Re-submit for Verification â†’
               </a>
-              <p style="margin-top:24px;color:#64748b;font-size:13px">InventBridge · Security notification.</p>
+              <p style="margin-top:24px;color:#64748b;font-size:13px">InventBridge Â· Security notification.</p>
             </div>`,
         });
       }).catch(() => {});
@@ -240,7 +240,7 @@ async function updateStartup(req, res) {
   }
 }
 
-/* ── PUT /api/startups/:id/status ────────────────── */
+/* â”€â”€ PUT /api/startups/:id/status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateStartupStatus(req, res) {
   try {
     const { status } = req.body;
@@ -252,7 +252,7 @@ async function updateStartupStatus(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PUT /api/startups/:id/verify  (admin) ───────── */
+/* â”€â”€ PUT /api/startups/:id/verify  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function verifyStartup(req, res) {
   try {
     const { verification_status } = req.body;
@@ -266,12 +266,12 @@ async function verifyStartup(req, res) {
     if (newStatus) startup = await Startup.updateStatus(req.params.id, newStatus);
 
     const notifyMsg = verification_status === "verified"
-      ? `🎉 Your startup "${startup.name}" has been verified and is now publicly visible to investors!`
+      ? `ðŸŽ‰ Your startup "${startup.name}" has been verified and is now publicly visible to investors!`
       : `Your startup "${startup.name}" verification was not approved. Please review and resubmit.`;
 
     Notification.create({
       user_id: startup.owner_id,
-      title:   verification_status === "verified" ? "Startup Verified ✓" : "Startup Verification Update",
+      title:   verification_status === "verified" ? "Startup Verified âœ“" : "Startup Verification Update",
       message: notifyMsg, type: "verification",
     }).catch(() => {});
 
@@ -289,7 +289,7 @@ async function verifyStartup(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── PATCH /api/startups/:id/archive ─────────────── */
+/* â”€â”€ PATCH /api/startups/:id/archive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function archiveStartup(req, res) {
   try {
     const startup = await Startup.findById(req.params.id);
@@ -299,7 +299,7 @@ async function archiveStartup(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── POST /api/startups/:id/submit-verification ─── */
+/* â”€â”€ POST /api/startups/:id/submit-verification â”€â”€â”€ */
 async function submitForVerification(req, res) {
   try {
     const startup = await Startup.findById(req.params.id);
@@ -307,7 +307,7 @@ async function submitForVerification(req, res) {
     if (startup.owner_id !== req.user.id)
       return res.status(403).json({ message: "Only the startup owner can submit for verification." });
 
-    // ── 1. Profile completeness check ──────────────
+    // â”€â”€ 1. Profile completeness check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const missingFields = PROFILE_FIELDS.filter((f) => {
       const val = startup[f.key];
       if (f.check) return !f.check(val);
@@ -321,7 +321,7 @@ async function submitForVerification(req, res) {
       });
     }
 
-    // ── 2. Required documents check ────────────────
+    // â”€â”€ 2. Required documents check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const uploadedFiles = await StartupFile.findByStartup(startup.id);
     const uploadedTypes = new Set(uploadedFiles.map((f) => f.file_type));
 
@@ -334,7 +334,7 @@ async function submitForVerification(req, res) {
       });
     }
 
-    // ── 3. Block if already in review ──────────────
+    // â”€â”€ 3. Block if already in review â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const VerificationRequest = require("../models/VerificationRequest.model");
     const existingReqs = await VerificationRequest.findAll({
       startup_id: startup.id, verification_type: "startup_verification",
@@ -345,7 +345,7 @@ async function submitForVerification(req, res) {
     if (active)
       return res.status(409).json({ message: "A verification request for this startup is already pending." });
 
-    // ── 4. Submit ───────────────────────────────────
+    // â”€â”€ 4. Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     await Startup.updateStatus(startup.id, "submitted");
     await Startup.updateVerification(startup.id, "pending");
 
@@ -382,7 +382,7 @@ async function submitForVerification(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── DELETE /api/startups/:id ────────────────────── */
+/* â”€â”€ DELETE /api/startups/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deleteStartup(req, res) {
   try {
     const startup = await Startup.findById(req.params.id);
@@ -399,7 +399,7 @@ async function deleteStartup(req, res) {
   } catch (err) { return res.status(400).json({ message: err.message }); }
 }
 
-/* ── GET /api/startups/admin/all  (admin) ─────────── */
+/* â”€â”€ GET /api/startups/admin/all  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function adminGetAllStartups(req, res) {
   try {
     const { status, verification_status, category_id, industry, stage, search, limit = 20, offset = 0 } = req.query;
@@ -416,3 +416,4 @@ module.exports = {
   updateStartupStatus, verifyStartup, archiveStartup,
   submitForVerification, adminGetAllStartups, deleteStartup,
 };
+

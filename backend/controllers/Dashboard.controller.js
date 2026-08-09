@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dashboard aggregator controller
  * Each handler runs parallel queries and returns a single response
  * shaped exactly as the frontend dashboards expect.
@@ -6,7 +6,7 @@
 const db = require("../config/database");
 const StartupView = require("../models/StartupView.model");
 
-/* ── helpers ─────────────────────────────────────── */
+/* â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function q(sql, params = []) {
   const [rows] = await db.execute(sql, params);
   return rows;
@@ -16,9 +16,9 @@ async function one(sql, params = []) {
   return row;
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    GET /api/dashboard/inventor
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function inventorDashboard(req, res) {
   try {
     const userId = req.user.id;
@@ -30,7 +30,7 @@ async function inventorDashboard(req, res) {
       recentInvestors,
       pendingTasks,
     ] = await Promise.all([
-      // All my startups — with offer count and follower count
+      // All my startups â€” with offer count and follower count
       q(
         `SELECT s.id, s.name, s.slug, s.industry, s.stage,
                 s.funding_required, s.country, s.verification_status,
@@ -94,7 +94,7 @@ async function inventorDashboard(req, res) {
       ),
     ]);
 
-    // Stats — real views from startup_views table
+    // Stats â€” real views from startup_views table
     const startupIds = myStartups.map((s) => s.id);
     const [totalViews, viewsChart] = await Promise.all([
       StartupView.totalViewsForOwner(startupIds),
@@ -168,14 +168,14 @@ async function inventorDashboard(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    GET /api/dashboard/investor
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function investorDashboard(req, res) {
   try {
     const userId = req.user.id;
 
-    // ── Step 1: Discover investor's industry preferences ──────────────────
+    // â”€â”€ Step 1: Discover investor's industry preferences â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Pull category_ids and industries from: saved startups + followed startups + past investments
     // Use these to BOOST matching startups in recommendations
     const interestRows = await q(
@@ -196,7 +196,7 @@ async function investorDashboard(req, res) {
     const preferredCategories = [...new Set(interestRows.map(r => r.category_id).filter(Boolean))];
     const preferredIndustries = [...new Set(interestRows.map(r => r.industry).filter(Boolean))];
 
-    // ── Step 2: Parallel queries ──────────────────────────────────────────
+    // â”€â”€ Step 2: Parallel queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const [
       savedCount,
       myInvestments,
@@ -235,11 +235,11 @@ async function investorDashboard(req, res) {
         `SELECT COUNT(*) AS total FROM connections WHERE receiver_id = ? AND status = 'pending'`,
         [userId]
       ),
-      // Active categories from DB — drives the filter chips on the frontend
+      // Active categories from DB â€” drives the filter chips on the frontend
       q("SELECT id, name, icon FROM categories WHERE status = 'active' ORDER BY name ASC"),
     ]);
 
-    // ── Step 3: Personalized recommendations ─────────────────────────────
+    // â”€â”€ Step 3: Personalized recommendations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // LEFT JOIN IS NULL replaces NOT IN for performance on large tables.
     // Personalization: startups matching preferred categories/industries
     // float to the top via a CASE score column.
@@ -274,7 +274,7 @@ async function investorDashboard(req, res) {
        FROM startups s
        LEFT JOIN categories c ON c.id = s.category_id
        LEFT JOIN profiles p ON p.user_id = s.owner_id
-       -- Exclude startups already invested in (LEFT JOIN IS NULL — much faster than NOT IN)
+       -- Exclude startups already invested in (LEFT JOIN IS NULL â€” much faster than NOT IN)
        LEFT JOIN investments inv_excl
          ON inv_excl.startup_id = s.id AND inv_excl.investor_id = ?
        WHERE s.status = 'published'
@@ -288,7 +288,7 @@ async function investorDashboard(req, res) {
       recParams
     );
 
-    // ── Step 4: Assemble response ─────────────────────────────────────────
+    // â”€â”€ Step 4: Assemble response â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const activeInvestments = myInvestments.filter(i => ["accepted","negotiating"].includes(i.status));
     const pendingOffers     = myInvestments.filter(i => i.status === "pending");
 
@@ -355,9 +355,9 @@ async function investorDashboard(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    GET /api/dashboard/organization
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function organizationDashboard(req, res) {
   try {
     const userId = req.user.id;
@@ -426,7 +426,7 @@ async function organizationDashboard(req, res) {
 
     return res.json({
       stats: {
-        programs: 0,            // no programs table yet — placeholder
+        programs: 0,            // no programs table yet â€” placeholder
         applications: pending.length,
         approved: approved.length,
         mentorshipRequests: connectionCount.total,
@@ -459,9 +459,9 @@ async function organizationDashboard(req, res) {
   }
 }
 
-/* ════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    GET /api/dashboard/admin
-   ════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function adminDashboard(req, res) {
   try {
     const [
@@ -554,3 +554,4 @@ module.exports = {
   organizationDashboard,
   adminDashboard,
 };
+

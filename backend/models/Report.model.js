@@ -1,5 +1,5 @@
-/**
- * Report model — table: reports
+﻿/**
+ * Report model â€” table: reports
  * Centralized user reporting system for startups, investors, posts, investments.
  */
 const db = require("../config/database");
@@ -11,7 +11,7 @@ const ALLOWED_REASONS      = [
 ];
 const ALLOWED_STATUSES = ["pending", "under_review", "resolved", "dismissed"];
 
-/* ── CREATE TABLE (called from schema init) ──────── */
+/* â”€â”€ CREATE TABLE (called from schema init) â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function ensureTable(connection) {
   await connection.execute(`
     CREATE TABLE IF NOT EXISTS reports (
@@ -37,7 +37,7 @@ async function ensureTable(connection) {
   `);
 }
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({ reporter_id, target_type, target_id, reason, description }) {
   if (!ALLOWED_TARGET_TYPES.includes(target_type))
     throw new Error(`Invalid target_type. Allowed: ${ALLOWED_TARGET_TYPES.join(", ")}`);
@@ -62,7 +62,7 @@ async function create({ reporter_id, target_type, target_id, reason, description
   return findById(result.insertId);
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     `SELECT r.*,
@@ -90,8 +90,8 @@ async function findAll({
   if (reason)      { conditions.push("r.reason = ?");      params.push(reason); }
 
   const where    = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-  const safeLimit  = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-  const safeOffset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
+  const safeLimit  = (Math.min(Math.max(parseInt(limit) || 20, 1), 100)) | 0;
+  const safeOffset = ((Math.max(parseInt(page) || 1, 1) - 1) * safeLimit) | 0;
 
   const [rows] = await db.execute(
     `SELECT r.*,
@@ -116,7 +116,7 @@ async function findAll({
   };
 }
 
-/* ── UPDATE (admin only) ─────────────────────────── */
+/* â”€â”€ UPDATE (admin only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateStatus(id, { status, reviewed_by, resolution }) {
   if (!ALLOWED_STATUSES.includes(status))
     throw new Error(`Invalid status. Allowed: ${ALLOWED_STATUSES.join(", ")}`);
@@ -141,3 +141,4 @@ module.exports = {
   ALLOWED_REASONS,
   ALLOWED_STATUSES,
 };
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Category controller
  * Routes: GET /api/categories, GET /api/categories/:id,
  *         POST /api/categories (admin), PUT /api/categories/:id (admin),
@@ -6,7 +6,7 @@
  */
 const Category = require("../models/Category.model");
 
-/* ── GET /api/categories ─────────────────────────── */
+/* â”€â”€ GET /api/categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getAllCategories(req, res) {
   try {
     const { status } = req.query;
@@ -17,7 +17,7 @@ async function getAllCategories(req, res) {
   }
 }
 
-/* ── GET /api/categories/:id ────────────────────── */
+/* â”€â”€ GET /api/categories/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function getCategoryById(req, res) {
   try {
     const category = await Category.findById(req.params.id);
@@ -27,7 +27,7 @@ async function getCategoryById(req, res) {
   }
 }
 
-/* ── POST /api/categories  (admin) ──────────────── */
+/* â”€â”€ POST /api/categories  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function createCategory(req, res) {
   try {
     const { name, description, icon } = req.body;
@@ -40,7 +40,7 @@ async function createCategory(req, res) {
   }
 }
 
-/* ── PUT /api/categories/:id  (admin) ────────────── */
+/* â”€â”€ PUT /api/categories/:id  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateCategory(req, res) {
   try {
     const category = await Category.update(req.params.id, req.body);
@@ -50,7 +50,7 @@ async function updateCategory(req, res) {
   }
 }
 
-/* ── DELETE /api/categories/:id  (admin) ─────────── */
+/* â”€â”€ DELETE /api/categories/:id  (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function deleteCategory(req, res) {
   try {
     const result = await Category.remove(req.params.id);
@@ -65,3 +65,4 @@ module.exports = {
   getAllCategories, getCategoryById,
   createCategory, updateCategory, deleteCategory,
 };
+
