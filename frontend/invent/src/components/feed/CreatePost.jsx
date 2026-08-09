@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Image, Video, X, Send, ChevronDown, Lightbulb, TrendingUp, AtSign, Tag, Check } from "lucide-react";
 import { createPost, uploadPostMedia } from "../../services/postApi";
 import { getMyConnections } from "../../services/discoveryApi";
@@ -212,7 +213,7 @@ export default function CreatePost({ onCreated, startups = [], investments = [] 
             {startupOptions.length === 0 ? (
               <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
                 <Lightbulb className="h-4 w-4 shrink-0" />
-                You need a startup to post. <a href="/inventor/startups/new" className="underline font-medium ml-1">Create one →</a>
+                You need a startup to post. <Link to="/inventor/startups/new" className="underline font-medium ml-1">Create one →</Link>
               </div>
             ) : (
               <div className="relative">
