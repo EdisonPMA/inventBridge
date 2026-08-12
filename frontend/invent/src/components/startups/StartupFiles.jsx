@@ -1,18 +1,19 @@
 import { useState, useRef } from "react";
-import { Upload, FileText, Video, Image, Trash2, ExternalLink, AlertCircle } from "lucide-react";
+import { Upload, FileText, Video, Image, Trash2, ExternalLink } from "lucide-react";
 import Button from "../common/Button";
 import {
-  uploadPitchDeck, uploadStartupDocument,
+  uploadPitchDeck, uploadStartupDocument, uploadRegistrationCertificate,
   uploadStartupVideo, uploadStartupLogo,
   deleteStartupFile,
 } from "../../services/startupApi";
+
 const fileTypeConfig = {
-  logo:                    { label: "Logo",                  icon: Image,    accept: "image/*",      uploadFn: "logo" },
-  pitch_deck:              { label: "Pitch Deck",            icon: FileText, accept: ".pdf,.ppt,.pptx", uploadFn: "pitch" },
-  registration_certificate:{ label: "Registration Cert.",   icon: FileText, accept: ".pdf,.doc,.docx", uploadFn: "doc" },
-  financial_report:        { label: "Financial Report",     icon: FileText, accept: ".pdf,.doc,.docx", uploadFn: "doc" },
-  legal_doc:               { label: "Legal Document",       icon: FileText, accept: ".pdf,.doc,.docx", uploadFn: "doc" },
-  demo_video:              { label: "Demo Video",            icon: Video,    accept: "video/*",        uploadFn: "video" },
+  logo:                    { label: "Logo",                  icon: Image,    accept: "image/*",           uploadFn: "logo" },
+  pitch_deck:              { label: "Pitch Deck",            icon: FileText, accept: ".pdf,.ppt,.pptx",   uploadFn: "pitch" },
+  registration_certificate:{ label: "Registration Cert.",   icon: FileText, accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png", uploadFn: "cert" },
+  financial_report:        { label: "Financial Report",     icon: FileText, accept: ".pdf,.doc,.docx",    uploadFn: "doc" },
+  legal_doc:               { label: "Legal Document",       icon: FileText, accept: ".pdf,.doc,.docx",    uploadFn: "doc" },
+  demo_video:              { label: "Demo Video",            icon: Video,    accept: "video/*",            uploadFn: "video" },
 };
 
 function FileRow({ file, isOwner, onDelete }) {
@@ -71,9 +72,10 @@ function UploadZone({ startupId, fileType, label, accept, uploadFn, onUploaded }
     setUploading(true); setError("");
     try {
       let result;
-      if (uploadFn === "logo")  result = await uploadStartupLogo(startupId, file);
+      if (uploadFn === "logo")   result = await uploadStartupLogo(startupId, file);
       else if (uploadFn === "pitch") result = await uploadPitchDeck(startupId, file, label);
       else if (uploadFn === "video") result = await uploadStartupVideo(startupId, file, label);
+      else if (uploadFn === "cert")  result = await uploadRegistrationCertificate(startupId, file, label);
       else result = await uploadStartupDocument(startupId, file, fileType, label);
       onUploaded?.(result);
     } catch (err) {
