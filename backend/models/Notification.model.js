@@ -1,10 +1,9 @@
 ﻿/**
- * Notification model â€” table: notifications
- * In-app notification delivery and read-state management.
+ * Notification model — table: notifications
  */
 const db = require("../config/database");
 
-/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── CREATE ─────────────────────────────────────── */
 async function create({ user_id, title, message = null, type = "general" }) {
   const [result] = await db.execute(
     "INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)",
@@ -13,7 +12,6 @@ async function create({ user_id, title, message = null, type = "general" }) {
   return findById(result.insertId);
 }
 
-/** Bulk-create: send the same notification to multiple users */
 async function createBulk(user_ids, { title, message = null, type = "general" }) {
   if (!user_ids.length) return [];
   const placeholders = user_ids.map(() => "(?,?,?,?)").join(",");
@@ -25,7 +23,7 @@ async function createBulk(user_ids, { title, message = null, type = "general" })
   return { sent: user_ids.length };
 }
 
-/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── READ ────────────────────────────────────────── */
 async function findById(id) {
   const [rows] = await db.execute(
     "SELECT * FROM notifications WHERE id = ? LIMIT 1", [id]
@@ -34,21 +32,23 @@ async function findById(id) {
   return rows[0];
 }
 
-async function findByUser(user_id, { is_read, type, limit = 30, offset = 0 } = {}) {
+async function findByUser(user_id, { is_read, type, limit = 20, offset = 0 } = {}) {
   const conditions = ["user_id = ?"];
   const params = [user_id];
   if (is_read !== undefined) { conditions.push("is_read = ?"); params.push(is_read); }
   if (type)                  { conditions.push("type = ?");    params.push(type); }
 
   const where = `WHERE ${conditions.join(" AND ")}`;
-  // Ensure integers â€” mysql2 on TiDB Cloud rejects string LIMIT/OFFSET
-  const safeLimit  = (Math.min(Math.max(parseInt(limit) || 30, 1), 100)) | 0;
-  const safeOffset = (Math.max(parseInt(offset) || 0, 0)) | 0;
+
+  // Inline validated integers — TiDB Cloud rejects LIMIT/OFFSET as bound parameters
+  // Values are fully sanitized (not raw user input), safe to interpolate
+  const safeLimit  = Math.max(1, Math.min(parseInt(limit,  10) || 20, 100));
+  const safeOffset = Math.max(0, parseInt(offset, 10) || 0);
 
   const [rows] = await db.execute(
     `SELECT * FROM notifications ${where}
-     ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [...params, safeLimit, safeOffset]
+     ORDER BY created_at DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+    params
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM notifications ${where}`, params
@@ -60,7 +60,7 @@ async function findByUser(user_id, { is_read, type, limit = 30, offset = 0 } = {
   return { rows, total, unread };
 }
 
-/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── UPDATE ─────────────────────────────────────── */
 async function markRead(id) {
   await db.execute("UPDATE notifications SET is_read = 1 WHERE id = ?", [id]);
   return findById(id);
@@ -74,7 +74,7 @@ async function markAllRead(user_id) {
   return { updated: result.affectedRows };
 }
 
-/* â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── DELETE ─────────────────────────────────────── */
 async function remove(id) {
   const [result] = await db.execute("DELETE FROM notifications WHERE id = ?", [id]);
   if (!result.affectedRows) throw new Error("Notification not found.");
@@ -94,4 +94,3 @@ module.exports = {
   markRead, markAllRead,
   remove, clearAll,
 };
-

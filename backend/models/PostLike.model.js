@@ -1,5 +1,5 @@
-/**
- * PostLike model — table: post_likes
+﻿/**
+ * PostLike model â€” table: post_likes
  * Toggle-style likes (idempotent).
  */
 const db = require("../config/database");
@@ -46,7 +46,7 @@ async function likersByPost(post_id, { limit = 20, offset = 0 } = {}) {
      LEFT JOIN profiles p ON p.user_id = pl.user_id
      WHERE pl.post_id = ?
      ORDER BY pl.created_at DESC
-     LIMIT ? OFFSET ?`,
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
     [post_id, limit, offset]
   );
   return rows;

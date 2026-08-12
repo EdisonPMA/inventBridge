@@ -116,10 +116,13 @@ async function findAll({
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
+  const safeLimit  = Math.max(1, Math.min(parseInt(limit, 10) || 20, 100));
+  const safeOffset = Math.max(0, parseInt(offset, 10) || 0);
+
   const [rows] = await db.execute(
     `SELECT ${PUBLIC_FIELDS} FROM startups s ${JOIN_PROFILE}
-     ${where} ORDER BY s.created_at DESC LIMIT ? OFFSET ?`,
-    [...params, limit, offset]
+     ${where} ORDER BY s.created_at DESC
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`, params
   );
 
   const [[{ total }]] = await db.execute(
@@ -304,8 +307,8 @@ async function discover({
      LEFT JOIN profiles p ON p.user_id = s.owner_id
      ${where}
      ORDER BY ${safeOrder}
-     LIMIT ? OFFSET ?`,
-    [...params, safeLimit, safeOffset]
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+    params
   );
 
   const [[{ total }]] = await db.execute(
@@ -320,4 +323,6 @@ module.exports = {
   findAll, discover, update, updateStatus, updateVerification,
   updateAiScore, refreshAiScore, remove,
 };
+
+
 

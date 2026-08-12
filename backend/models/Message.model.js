@@ -1,12 +1,12 @@
-/**
- * Message model — table: messages
+﻿/**
+ * Message model â€” table: messages
  *
  * Features: reply threading, soft-delete, edit, pin, reactions,
  * file attachment metadata, read receipts, pagination.
  */
 const db = require("../config/database");
 
-/* ── Reusable select ─────────────────────────────── */
+/* â”€â”€ Reusable select â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const SELECT_MSG = `
   m.id, m.conversation_id, m.sender_id, m.message,
   m.attachment_url, m.attachment_type, m.mime_type, m.file_size, m.file_name, m.public_id,
@@ -30,7 +30,7 @@ const FROM_MSG = `
   LEFT JOIN profiles rp ON rp.user_id = rm.sender_id
 `;
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({
   conversation_id, sender_id,
   message = null,
@@ -61,7 +61,7 @@ async function create({
   return findById(result.insertId);
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     `SELECT ${SELECT_MSG} ${FROM_MSG} WHERE m.id = ? LIMIT 1`, [id]
@@ -71,7 +71,7 @@ async function findById(id) {
 }
 
 /**
- * Paginate messages for a conversation — newest-N then reversed to oldest-first.
+ * Paginate messages for a conversation â€” newest-N then reversed to oldest-first.
  * Soft-deleted messages show as "[deleted]" placeholders (preserves reply chains).
  */
 async function findByConversation(conversation_id, { limit = 50, offset = 0 } = {}) {
@@ -84,7 +84,7 @@ async function findByConversation(conversation_id, { limit = 50, offset = 0 } = 
     `SELECT ${SELECT_MSG} ${FROM_MSG}
      WHERE m.conversation_id = ?
      ORDER BY m.created_at DESC
-     LIMIT ? OFFSET ?`,
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
     [conversation_id, limit, offset]
   );
 
@@ -151,7 +151,7 @@ async function getReactionsBatch(messageIds) {
   return map;
 }
 
-/** Normalise flat SQL row → structured message object */
+/** Normalise flat SQL row â†’ structured message object */
 function normalise(row, reactions = []) {
   const {
     reply_id, reply_message, reply_sender_id, reply_first_name, reply_last_name, reply_deleted_at,
@@ -201,7 +201,7 @@ async function countUnread(user_id, conversation_id = null) {
   return total;
 }
 
-/* ── UPDATE ──────────────────────────────────────── */
+/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function markRead(conversation_id, reader_id) {
   await db.execute(
     `UPDATE messages SET is_read = 1, status = 'read'
@@ -247,7 +247,7 @@ async function togglePin(id) {
   return findById(id);
 }
 
-/* ── REACTIONS ───────────────────────────────────── */
+/* â”€â”€ REACTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function toggleReaction(message_id, user_id, emoji) {
   // Check if reaction exists
   const [existing] = await db.execute(
@@ -269,7 +269,7 @@ async function toggleReaction(message_id, user_id, emoji) {
   }
 }
 
-/* ── HARD DELETE (admin) ─────────────────────────── */
+/* â”€â”€ HARD DELETE (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function remove(id) {
   const [result] = await db.execute("DELETE FROM messages WHERE id = ?", [id]);
   if (!result.affectedRows) throw new Error("Message not found.");

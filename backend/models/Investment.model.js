@@ -1,5 +1,5 @@
-/**
- * Investment model — table: investments
+﻿/**
+ * Investment model â€” table: investments
  * Tracks investment offers, negotiations and closed deals.
  * Statuses: pending | negotiating | accepted | rejected | completed | cancelled | finalized
  *
@@ -23,7 +23,7 @@ const JOIN_RELATIONS = `
   LEFT JOIN profiles ip ON ip.user_id = i.investor_id
 `;
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({
   startup_id, investor_id, requested_amount = 0,
   offered_amount = 0, equity_percentage = 0, notes = null,
@@ -58,7 +58,7 @@ async function create({
   return investment;
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     `SELECT ${WITH_RELATIONS} FROM investments i ${JOIN_RELATIONS}
@@ -108,7 +108,7 @@ async function findAll({ status, startup_id, investor_id, limit = 20, offset = 0
 
   const [rows] = await db.execute(
     `SELECT ${WITH_RELATIONS} FROM investments i ${JOIN_RELATIONS}
-     ${where} ORDER BY i.created_at DESC LIMIT ? OFFSET ?`,
+     ${where} ORDER BY i.created_at DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`,
     [...params, limit, offset]
   );
   const [[{ total }]] = await db.execute(
@@ -117,7 +117,7 @@ async function findAll({ status, startup_id, investor_id, limit = 20, offset = 0
   return { rows, total };
 }
 
-/* ── UPDATE ──────────────────────────────────────── */
+/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function updateStatus(id, status, actorId = null) {
   const valid = ["pending","negotiating","accepted","rejected","completed","cancelled","finalized"];
   if (!valid.includes(status)) throw new Error(`Invalid status: ${status}`);
@@ -184,14 +184,14 @@ async function attachAgreement(id, agreement_url, actorId = null) {
   return updated;
 }
 
-/* ── DELETE ──────────────────────────────────────── */
+/* â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function remove(id) {
   const [result] = await db.execute("DELETE FROM investments WHERE id = ?", [id]);
   if (!result.affectedRows) throw new Error("Investment not found.");
   return { message: "Investment record deleted." };
 }
 
-/* ── STATS ───────────────────────────────────────── */
+/* â”€â”€ STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function totalFunded(startup_id) {
   const [[{ total }]] = await db.execute(
     `SELECT COALESCE(SUM(offered_amount), 0) AS total

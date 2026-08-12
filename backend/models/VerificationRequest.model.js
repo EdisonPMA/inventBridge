@@ -66,9 +66,13 @@ async function findAll({ status, user_id, startup_id, verification_type, limit =
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
+  const safeLimit  = Math.max(1, Math.min(parseInt(limit,  10) || 30, 100));
+  const safeOffset = Math.max(0, parseInt(offset, 10) || 0);
+
   const [rows] = await db.execute(
     `SELECT ${WITH_RELATIONS} FROM verification_requests vr ${JOIN_RELATIONS}
-     ${where} ORDER BY vr.created_at DESC LIMIT ? OFFSET ?`,[...params, (parseInt(limit)||30)|0, (parseInt(offset)||0)|0]
+     ${where} ORDER BY vr.created_at DESC
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`, params
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM verification_requests vr ${where}`, params
@@ -143,4 +147,5 @@ module.exports = {
   create, findById, findAll, findByUser,
   countPending, startReview, approve, reject, uploadDocument, remove,
 };
+
 

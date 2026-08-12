@@ -53,8 +53,8 @@ async function findAll({ admin_id, action, target_type, page = 1, limit = 30 } =
      LEFT JOIN profiles p ON p.user_id = al.admin_id
      ${where}
      ORDER BY al.created_at DESC
-     LIMIT ? OFFSET ?`,
-    [...params, safeLimit, safeOffset]
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+    params
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM audit_logs al ${where}`, params
@@ -63,4 +63,7 @@ async function findAll({ admin_id, action, target_type, page = 1, limit = 30 } =
 }
 
 module.exports = { ensureTable, log, findAll };
+
+
+
 

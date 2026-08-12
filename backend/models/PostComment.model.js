@@ -1,9 +1,9 @@
-/**
- * PostComment model — table: post_comments
+﻿/**
+ * PostComment model â€” table: post_comments
  */
 const db = require("../config/database");
 
-/* ── CREATE ──────────────────────────────────────── */
+/* â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function create({ post_id, user_id, comment }) {
   const [result] = await db.execute(
     "INSERT INTO post_comments (post_id, user_id, comment) VALUES (?, ?, ?)",
@@ -12,7 +12,7 @@ async function create({ post_id, user_id, comment }) {
   return findById(result.insertId);
 }
 
-/* ── READ ────────────────────────────────────────── */
+/* â”€â”€ READ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function findById(id) {
   const [rows] = await db.execute(
     `SELECT pc.*, p.first_name, p.last_name, p.profile_photo, u.role
@@ -34,7 +34,7 @@ async function findByPost(post_id, { limit = 50, offset = 0 } = {}) {
      LEFT JOIN profiles p ON p.user_id = pc.user_id
      WHERE pc.post_id = ?
      ORDER BY pc.created_at ASC
-     LIMIT ? OFFSET ?`,
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
     [post_id, limit, offset]
   );
 
@@ -44,13 +44,13 @@ async function findByPost(post_id, { limit = 50, offset = 0 } = {}) {
   return { rows, total };
 }
 
-/* ── UPDATE ──────────────────────────────────────── */
+/* â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function update(id, comment) {
   await db.execute("UPDATE post_comments SET comment = ? WHERE id = ?", [comment, id]);
   return findById(id);
 }
 
-/* ── DELETE ──────────────────────────────────────── */
+/* â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 async function remove(id) {
   const [result] = await db.execute("DELETE FROM post_comments WHERE id = ?", [id]);
   if (!result.affectedRows) throw new Error("Comment not found.");

@@ -102,8 +102,8 @@ async function findAll({
      LEFT JOIN profiles rp ON rp.user_id = r.reporter_id
      ${where}
      ORDER BY r.created_at DESC
-     LIMIT ? OFFSET ?`,
-    [...params, safeLimit, safeOffset]
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+    params
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM reports r ${where}`, params
@@ -141,4 +141,7 @@ module.exports = {
   ALLOWED_REASONS,
   ALLOWED_STATUSES,
 };
+
+
+
 

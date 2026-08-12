@@ -111,8 +111,8 @@ async function findAll({ user_id, startup_id, visibility, search, limit = 20, of
      LEFT JOIN startups s ON s.id = po.startup_id
      ${where}
      ORDER BY po.created_at DESC
-     LIMIT ? OFFSET ?`,
-    [...params, safeLimit, safeOffset]
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+    params
   );
   const [[{ total }]] = await db.execute(
     `SELECT COUNT(*) AS total FROM posts po ${where}`, params
@@ -166,8 +166,8 @@ async function personalFeed(viewer_id, { limit = 20, offset = 0 } = {}) {
      LEFT JOIN startups s ON s.id = po.startup_id
      ${feedWhere}
      ORDER BY po.created_at DESC
-     LIMIT ? OFFSET ?`,
-    [viewer_id, viewer_id, viewer_id, viewer_id, safeLimit, safeOffset]
+     LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+    [viewer_id, viewer_id, viewer_id, viewer_id]
   );
 
   const [[{ total }]] = await db.execute(
@@ -234,4 +234,6 @@ async function remove(id) {
 }
 
 module.exports = { create, findById, findAll, feed, personalFeed, update, archive, restore, remove };
+
+
 

@@ -124,6 +124,11 @@ app.use(passport.initialize());  // no sessions — JWT only
 
 // ── Global rate limit ──────────────────────────────
 app.use(generalLimiter);
+
+// ── Root + health endpoints ────────────────────────
+app.get("/", (_req, res) =>
+  res.json({ success: true, message: "InventBridge API is running", version: "2.0" })
+);
 app.get("/health", (_req, res) =>
   res.json({ status: "ok", timestamp: new Date().toISOString() })
 );

@@ -110,8 +110,8 @@ async function listUsers(req, res) {
        FROM users u LEFT JOIN profiles p ON p.user_id = u.id
        ${where}
        ORDER BY u.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, safeLimit, safeOffset]
+       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+      [...params]
     );
     const [[{ total }]] = await db.execute(
       `SELECT COUNT(*) AS total FROM users u LEFT JOIN profiles p ON p.user_id = u.id ${where}`,
@@ -243,8 +243,8 @@ async function listStartups(req, res) {
        LEFT JOIN profiles p ON p.user_id = s.owner_id
        ${where}
        ORDER BY s.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, safeLimit, safeOffset]
+       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+      [...params]
     );
     const [[{ total }]] = await db.execute(
       `SELECT COUNT(*) AS total FROM startups s ${where}`, params
@@ -412,8 +412,8 @@ async function listInvestors(req, res) {
        FROM users u LEFT JOIN profiles p ON p.user_id = u.id
        ${where}
        ORDER BY u.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, safeLimit, safeOffset]
+       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+      [...params]
     );
     const [[{ total }]] = await db.execute(
       `SELECT COUNT(*) AS total FROM users u LEFT JOIN profiles p ON p.user_id = u.id ${where}`, params
@@ -454,8 +454,8 @@ async function listPosts(req, res) {
        LEFT JOIN profiles p ON p.user_id = po.user_id
        ${where}
        ORDER BY po.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, safeLimit, safeOffset]
+       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+      [...params]
     );
     const [[{ total }]] = await db.execute(
       `SELECT COUNT(*) AS total FROM posts po ${where}`, params
@@ -516,8 +516,8 @@ async function listInvestments(req, res) {
        LEFT JOIN profiles ip ON ip.user_id = i.investor_id
        ${where}
        ORDER BY i.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, safeLimit, safeOffset]
+       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+      [...params]
     );
     const [[{ total }]] = await db.execute(
       `SELECT COUNT(*) AS total FROM investments i ${where}`, params
@@ -623,8 +623,8 @@ async function listSuspended(req, res) {
        FROM users u LEFT JOIN profiles p ON p.user_id = u.id
        WHERE u.status = 'suspended'
        ORDER BY u.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [safeLimit, safeOffset]
+       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+      []
     );
     const [[{ total }]] = await db.execute(
       "SELECT COUNT(*) AS total FROM users WHERE status = 'suspended'"
