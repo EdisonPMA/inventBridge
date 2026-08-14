@@ -250,9 +250,12 @@ export default function MyInvestments() {
 
   async function handleMessage(inv) {
     try {
-      const conv = await getOrCreateDm(inv.startup_owner_id || inv.startup_id);
+      // Use startup_owner_id — the founder we need to message, not the startup id
+      const founderId = inv.startup_owner_id;
+      if (!founderId) { setError("Cannot open conversation: founder info missing."); return; }
+      const conv = await getOrCreateDm(founderId);
       navigate(`/messages/${conv.id}`);
-    } catch { /* silent */ }
+    } catch (err) { setError(err?.message || "Failed to open conversation."); }
   }
 
   const totalDeployed = investments

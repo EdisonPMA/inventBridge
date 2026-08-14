@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users, UserCheck, Clock, UserPlus, UserMinus,
@@ -37,12 +37,14 @@ function Avatar({ name = "", photo }) {
 }
 
 function ConnectionCard({ conn, tab, onAccept, onReject, onCancel, onRemove, onMessage, actionId }) {
+  const navigate = useNavigate();
   const [confirmRemove, setConfirmRemove] = useState(false);
   const pending = actionId === conn.id;
 
   const otherName  = conn.otherName  || "User";
   const otherPhoto = conn.otherPhoto || null;
   const otherRole  = conn.otherRole  || "";
+  const otherId    = conn.otherId    || null;
 
   return (
     <motion.div
@@ -50,10 +52,13 @@ function ConnectionCard({ conn, tab, onAccept, onReject, onCancel, onRemove, onM
       animate={{ opacity: 1, y: 0 }}
       className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
     >
-      <Avatar name={otherName} photo={otherPhoto} />
+      {/* Clickable avatar/name â†’ profile page */}
+      <button onClick={() => otherId && navigate(`/profile/${otherId}`)} className="shrink-0">
+        <Avatar name={otherName} photo={otherPhoto} />
+      </button>
 
-      <div className="flex-1 min-w-0">
-        <p className="truncate font-semibold text-sm text-slate-900">{otherName}</p>
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => otherId && navigate(`/profile/${otherId}`)}>
+        <p className="truncate font-semibold text-sm text-slate-900 hover:text-blue-600 transition">{otherName}</p>
         {otherRole && (
           <p className="text-xs text-slate-500 capitalize">{otherRole}</p>
         )}
@@ -93,7 +98,7 @@ function ConnectionCard({ conn, tab, onAccept, onReject, onCancel, onRemove, onM
               aria-label="Cancel request"
               title="Cancel request"
             >
-              ✕
+              âœ•
             </button>
           </>
         )}
@@ -175,14 +180,14 @@ export default function NetworkPage() {
 
   useEffect(() => { loadAll(); }, []);
 
-  /* ── handlers ─────────────────────────────────── */
+  /* â”€â”€ handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   async function handleAccept(conn) {
     setActionId(conn.id);
     try {
       await acceptConnection(conn.id);
       setReceived((prev) => prev.filter((c) => c.id !== conn.id));
       setConnections((prev) => [{ ...conn, status: "accepted" }, ...prev]);
-    } catch { /* silent */ } finally { setActionId(null); }
+    } catch (err) { setError(err?.message || "Action failed. Please try again."); } finally { setActionId(null); }
   }
 
   async function handleReject(conn) {
@@ -190,7 +195,7 @@ export default function NetworkPage() {
     try {
       await rejectConnection(conn.id);
       setReceived((prev) => prev.filter((c) => c.id !== conn.id));
-    } catch { /* silent */ } finally { setActionId(null); }
+    } catch (err) { setError(err?.message || "Action failed. Please try again."); } finally { setActionId(null); }
   }
 
   async function handleCancel(conn) {
@@ -198,7 +203,7 @@ export default function NetworkPage() {
     try {
       await cancelConnectionRequest(conn.id);
       setSent((prev) => prev.filter((c) => c.id !== conn.id));
-    } catch { /* silent */ } finally { setActionId(null); }
+    } catch (err) { setError(err?.message || "Action failed. Please try again."); } finally { setActionId(null); }
   }
 
   async function handleRemove(conn) {
@@ -206,7 +211,7 @@ export default function NetworkPage() {
     try {
       await removeConnection(conn.id);
       setConnections((prev) => prev.filter((c) => c.id !== conn.id));
-    } catch { /* silent */ } finally { setActionId(null); }
+    } catch (err) { setError(err?.message || "Action failed. Please try again."); } finally { setActionId(null); }
   }
 
   async function handleMessage(conn) {
@@ -342,3 +347,4 @@ export default function NetworkPage() {
     </DashboardLayout>
   );
 }
+

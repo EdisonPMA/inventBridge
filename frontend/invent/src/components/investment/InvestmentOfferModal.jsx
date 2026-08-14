@@ -45,7 +45,8 @@ export default function InvestmentOfferModal({ startup, onClose, onSuccess }) {
         notes:             notes.trim() || undefined,
       });
       setSuccess(res.investment);
-      onSuccess?.(res.investment);
+      // Call onSuccess after showing the success screen (not before)
+      setTimeout(() => onSuccess?.(res.investment), 100);
     } catch (err) {
       setError(err?.message || "Failed to submit offer. Please try again.");
     } finally {

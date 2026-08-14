@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Briefcase, DollarSign, AlertCircle, RefreshCw,
   CheckCircle, XCircle, MessageSquare, ChevronDown,
-  History, ArrowRightLeft, FileCheck, MinusCircle,
+  History, ArrowRightLeft, FileCheck, MinusCircle, Send, X, Percent,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
@@ -13,6 +13,7 @@ import {
   acceptInvestment,
   rejectInvestment,
   negotiateInvestment,
+  updateOffer,
   getInvestmentHistory,
 } from "../../services/investmentApi";
 import { getOrCreateDm } from "../../services/conversationApi";
@@ -36,7 +37,7 @@ const FILTER_OPTS = [
   { value: "cancelled",   label: "Cancelled" },
 ];
 
-/* ── History event helpers ───────────────────────── */
+/* â”€â”€ History event helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const EVENT_META = {
   initial_offer:    { label: "Initial Offer",    icon: DollarSign,      color: "text-blue-600   bg-blue-50   border-blue-200" },
   counter_offer:    { label: "Counter Offer",    icon: ArrowRightLeft,  color: "text-amber-600  bg-amber-50  border-amber-200" },
@@ -97,17 +98,17 @@ function HistoryTimeline({ investmentId }) {
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-slate-700">
                   {e.event_type === "status_change"
-                    ? (STATUS_LABELS[e.notes] || `Status → ${e.notes}`)
+                    ? (STATUS_LABELS[e.notes] || `Status â†’ ${e.notes}`)
                     : meta.label}
                 </p>
                 <p className="text-xs text-slate-400">
                   by <span className="font-medium text-slate-600 capitalize">{name}</span>
-                  {" · "}{new Date(e.created_at).toLocaleString()}
+                  {" Â· "}{new Date(e.created_at).toLocaleString()}
                 </p>
                 {(e.offered_amount || e.equity_percentage) && (
                   <p className="mt-0.5 text-xs text-slate-600">
                     {e.offered_amount && <span className="font-medium">${Number(e.offered_amount).toLocaleString()}</span>}
-                    {e.offered_amount && e.equity_percentage && " · "}
+                    {e.offered_amount && e.equity_percentage && " Â· "}
                     {e.equity_percentage && <span>{e.equity_percentage}% equity</span>}
                   </p>
                 )}
@@ -123,10 +124,75 @@ function HistoryTimeline({ investmentId }) {
   );
 }
 
-/* ── Offer Card ──────────────────────────────────── */
-function OfferCard({ offer, onAccept, onReject, onDiscuss, actionId }) {
-  const [expanded,     setExpanded]     = useState(false);
-  const [showHistory,  setShowHistory]  = useState(false);
+/* â”€â”€ Counter Offer Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function CounterOfferModal({ offer, onClose, onSubmit }) {
+  const [amount,   setAmount]   = useState(offer.offered_amount || "");
+  const [equity,   setEquity]   = useState(offer.equity_percentage || "");
+  const [notes,    setNotes]    = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!amount || Number(amount) <= 0) { setError("Enter a valid amount."); return; }
+    if (!equity || Number(equity) <= 0 || Number(equity) > 100) { setError("Equity must be 0.01â€“100%."); return; }
+    setLoading(true); setError("");
+    try {
+      await onSubmit({ offered_amount: Number(amount), equity_percentage: Number(equity), notes: notes.trim() || undefined });
+      onClose();
+    } catch (err) { setError(err?.message || "Failed to send counter offer."); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          <h3 className="font-bold text-slate-900">Send Counter Offer</h3>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"><X className="h-4 w-4"/></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Proposed Amount (USD)</label>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400"/>
+              <input type="number" min="1" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 py-2 pl-8 pr-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"/>
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Equity (%)</label>
+            <div className="relative">
+              <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400"/>
+              <input type="number" min="0.01" max="100" step="0.01" required value={equity} onChange={e => setEquity(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 py-2 pl-8 pr-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"/>
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Message (optional)</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
+              placeholder="Explain your counter offer termsâ€¦"
+              className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"/>
+          </div>
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <div className="flex gap-2 pt-1">
+            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-slate-200 py-2 text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
+            <button type="submit" disabled={loading}
+              className="flex-1 rounded-xl bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              {loading ? "Sendingâ€¦" : "Send Counter"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* â”€â”€ Offer Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function OfferCard({ offer, onAccept, onReject, onDiscuss, onCounter, actionId }) {
+  const [expanded,      setExpanded]      = useState(false);
+  const [showHistory,   setShowHistory]   = useState(false);
+  const [showCounter,   setShowCounter]   = useState(false);
   const busy = actionId === offer.id;
 
   const investorName = `${offer.investor_first || ""} ${offer.investor_last || ""}`.trim() || "Investor";
@@ -174,7 +240,7 @@ function OfferCard({ offer, onAccept, onReject, onDiscuss, actionId }) {
 
       {/* Expanded panel */}
       <AnimatePresence>
-        {expanded && (
+        {showCounter && (<CounterOfferModal offer={offer} onClose={() => setShowCounter(false)} onSubmit={(data) => onCounter(offer, data)} />)}{expanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -221,7 +287,13 @@ function OfferCard({ offer, onAccept, onReject, onDiscuss, actionId }) {
               <div className="flex flex-wrap gap-2 border-t border-slate-100 px-5 py-3">
                 {offer.status === "pending" && (
                   <button
-                    onClick={() => onAccept(offer)} disabled={busy}
+                    onClick={() => { setShowCounter(true); }}
+                      disabled={busy}
+                      className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50 transition">
+                      <ArrowRightLeft className="h-3.5 w-3.5" /> Counter Offer
+                    </button>
+                  <button
+                      onClick={() => onAccept(offer)} disabled={busy} disabled={busy}
                     className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition"
                   >
                     <CheckCircle className="h-3.5 w-3.5" /> Accept
@@ -239,7 +311,7 @@ function OfferCard({ offer, onAccept, onReject, onDiscuss, actionId }) {
                 >
                   <MessageSquare className="h-3.5 w-3.5" /> Discuss
                 </button>
-                {busy && <span className="text-xs text-slate-400 self-center">Processing…</span>}
+                {busy && <span className="text-xs text-slate-400 self-center">Processingâ€¦</span>}
               </div>
             )}
 
@@ -260,7 +332,7 @@ function OfferCard({ offer, onAccept, onReject, onDiscuss, actionId }) {
   );
 }
 
-/* ── Page ────────────────────────────────────────── */
+/* â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function InvestmentOffersPage() {
   const navigate = useNavigate();
   const [offers,   setOffers]   = useState([]);
@@ -318,6 +390,15 @@ export default function InvestmentOffersPage() {
       const conv = await getOrCreateDm(offer.investor_id);
       navigate(`/messages/${conv.id}`);
     } catch (err) { setError(err?.message || "Failed to open conversation."); }
+    finally { setActionId(null); }
+  }
+
+  async function handleCounter(offer, data) {
+    setActionId(offer.id);
+    try {
+      const res = await updateOffer(offer.id, data);
+      setOffers(prev => prev.map(o => o.id === offer.id ? res.investment : o));
+    } catch (err) { setError(err?.message || "Failed to send counter offer."); }
     finally { setActionId(null); }
   }
 
@@ -383,7 +464,7 @@ export default function InvestmentOffersPage() {
             {offers.map(offer => (
               <OfferCard key={offer.id} offer={offer}
                 onAccept={handleAccept} onReject={handleReject}
-                onDiscuss={handleDiscuss} actionId={actionId} />
+                onDiscuss={handleDiscuss} onCounter={handleCounter} actionId={actionId} />
             ))}
           </div>
         )}
@@ -391,3 +472,5 @@ export default function InvestmentOffersPage() {
     </DashboardLayout>
   );
 }
+
+
