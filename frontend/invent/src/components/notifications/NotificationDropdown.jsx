@@ -23,6 +23,7 @@ const TYPE_ROUTES = {
   investment:  "/investor/investments",
   message:     "/messages",
   verification:"/investor/verification",
+  post:        "/feed",
 };
 
 function timeAgo(date) {

@@ -24,18 +24,17 @@ const TYPE_ICONS = {
 };
 
 // Routes vary by role — investment notifications go to different pages for investor vs inventor
-function getNotificationRoute(type, userRole) {
+function getNotificationRoute(type, userRole, notification) {
   if (type === "investment") {
     return userRole === "inventor" ? "/inventor/investment-offers" : "/investor/investments";
   }
   if (type === "verification") {
     return userRole === "investor" ? "/investor/verification" : "/inventor/startups";
   }
-  const map = {
-    connection: "/network",
-    message:    "/messages",
-  };
-  return map[type] || null;
+  if (type === "connection") return "/network";
+  if (type === "message")    return "/messages";
+  if (type === "post")       return "/feed";
+  return null;
 }
 
 const TYPE_FILTERS = [
@@ -140,24 +139,22 @@ export default function NotificationsPage() {
 
   return (
     <DashboardLayout>
-      <div className="mx-auto max-w-2xl space-y-5">
+      <div className="mx-auto w-full max-w-2xl space-y-4 px-2 sm:px-0">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
+          className="flex flex-wrap items-center justify-between gap-2"
         >
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-              <Bell className="h-6 w-6 text-blue-600" />
-              Notifications
-              {unread > 0 && (
-                <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
-                  {unread}
-                </span>
-              )}
-            </h1>
-          </div>
+          <h1 className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-slate-900">
+            <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+            Notifications
+            {unread > 0 && (
+              <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                {unread}
+              </span>
+            )}
+          </h1>
           <div className="flex items-center gap-2">
             {unread > 0 && (
               <button
@@ -165,7 +162,8 @@ export default function NotificationsPage() {
                 className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 transition"
                 aria-label="Mark all as read"
               >
-                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                <CheckCheck className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Mark all read</span>
               </button>
             )}
             {notifications.length > 0 && (
@@ -174,19 +172,20 @@ export default function NotificationsPage() {
                 className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition"
                 aria-label="Clear all notifications"
               >
-                <Trash2 className="h-3.5 w-3.5" /> Clear all
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Clear all</span>
               </button>
             )}
           </div>
         </motion.div>
 
-        {/* Type filter tabs */}
-        <div className="flex flex-wrap gap-2">
+        {/* Type filter tabs — scrollable on mobile */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {TYPE_FILTERS.map((f) => (
             <button
               key={f.value}
               onClick={() => setTypeFilter(f.value)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition ${
                 typeFilter === f.value
                   ? "bg-blue-600 text-white"
                   : "border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600"
@@ -212,7 +211,7 @@ export default function NotificationsPage() {
               {Array(5).fill(0).map((_, i) => <Skeleton key={i} />)}
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-20 text-center">
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
               <Bell className="h-10 w-10 text-slate-200" />
               <p className="font-medium text-slate-500">You&rsquo;re all caught up.</p>
               <p className="text-sm text-slate-400">No notifications to show.</p>
@@ -223,7 +222,7 @@ export default function NotificationsPage() {
                 <button
                   key={n.id}
                   onClick={() => handleRead(n)}
-                  className={`flex w-full items-start gap-3 px-4 py-3.5 text-left transition hover:bg-slate-50 ${
+                  className={`flex w-full items-start gap-3 px-3 sm:px-4 py-3.5 text-left transition hover:bg-slate-50 ${
                     !n.is_read ? "bg-blue-50/50" : ""
                   }`}
                 >
