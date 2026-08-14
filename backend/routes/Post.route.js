@@ -1,8 +1,8 @@
 const router = require("express").Router();
 const c = require("../controllers/Post.controller");
-const { requireAuth } = require("../middelwares/auth.middleware");
+const { requireAuth, optionalAuth } = require("../middelwares/auth.middleware");
 
-router.get("/",                                    c.getFeed);
+router.get("/",                                    optionalAuth, c.getFeed); // optionalAuth attaches req.user if token present
 router.post("/",                                   requireAuth, c.createPost);
 router.get("/mine/archived",                       requireAuth, c.getMyArchivedPosts);
 router.get("/:id",                                 c.getPostById);

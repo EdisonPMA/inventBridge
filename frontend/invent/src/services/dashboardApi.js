@@ -62,13 +62,13 @@ export async function getPendingVerifications() {
   return res.data;
 }
 
-export async function approveVerification(id) {
-  const res = await api.put(`/verifications/${id}/approve`);
+export async function approveVerification(id, remarks) {
+  const res = await api.patch(`/verifications/${id}/approve`, { remarks });
   return res.data;
 }
 
 export async function rejectVerification(id, reason) {
-  const res = await api.put(`/verifications/${id}/reject`, { reason });
+  const res = await api.patch(`/verifications/${id}/reject`, { remarks: reason });
   return res.data;
 }
 
@@ -78,12 +78,12 @@ export async function getAllUsers(params = {}) {
 }
 
 export async function updateUserRole(id, role) {
-  const res = await api.put(`/users/${id}/role`, { role });
+  const res = await api.patch(`/admin/users/${id}/role`, { role });
   return res.data;
 }
 
-export async function suspendUser(id) {
-  const res = await api.put(`/users/${id}/status`, { status: "suspended" });
+export async function suspendUser(id, reason) {
+  const res = await api.patch(`/admin/users/${id}/status`, { status: "suspended", reason });
   return res.data;
 }
 
@@ -92,7 +92,7 @@ export async function getAllStartups(params = {}) {
   return res.data;
 }
 
-export async function verifyStartup(id) {
-  const res = await api.put(`/startups/${id}/verify`, { verification_status: "verified" });
+export async function verifyStartup(id, remarks) {
+  const res = await api.patch(`/admin/startups/${id}/status`, { verification_status: "verified", ...(remarks ? { reason: remarks } : {}) });
   return res.data;
 }

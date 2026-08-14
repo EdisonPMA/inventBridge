@@ -2,10 +2,74 @@
 import { RefreshCw, AlertCircle, ChevronUp, Eye, X, CheckCircle, ExternalLink, FileCheck, ShieldCheck } from "lucide-react";
 import { adminGetStartupDetail } from "../../../services/adminApi";
 import { adminApproveVerification, adminRejectVerification, adminStartReview } from "../../../services/verificationApi";
+import { getSecureFileUrl } from "../../../services/uploadApi";
 import api from "../../../services/api";
 import { Skel, Pager } from "../adminShared";
 
+/* ── Secure file button — fetches signed URL before opening ── */
+function SecureFileButton({ fileId, fallbackUrl, label = "Open File" }) {
+  const [loading, setLoading] = useState(false);
+  async function open() {
+    if (!fileId) { window.open(fallbackUrl, "_blank", "noopener,noreferrer"); return; }
+    setLoading(true);
+    try {
+      const res = await getSecureFileUrl(fileId);
+      const url = res.data?.signed_url || res.data?.cloud_url || fallbackUrl;
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+    } catch { if (fallbackUrl) window.open(fallbackUrl, "_blank", "noopener,noreferrer"); }
+    finally { setLoading(false); }
+  }
+  return (
+    <button onClick={open} disabled={loading}
+      className="flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50 transition w-full">
+      <FileCheck className="h-4 w-4 shrink-0"/>
+      <span className="flex-1 truncate text-left">{loading ? "Loading…" : label}</span>
+      <ExternalLink className="h-3.5 w-3.5 shrink-0"/>
+    </button>
+  );
+}
+
+/* ── InlineRejectForm — replaces window.prompt ── */
+function InlineRejectForm({ onConfirm, onCancel }) {
+  const [reason, setReason] = useState("");
+  return (
+    <div className="mt-2 space-y-2 rounded-xl border border-red-100 bg-red-50 p-3">
+      <p className="text-xs font-semibold text-red-700">Rejection reason (required):</p>
+      <textarea value={reason} onChange={e => setReason(e.target.value)} rows={2}
+        placeholder="Explain why this verification is being rejected…"
+        className="w-full resize-none rounded-lg border border-red-200 bg-white px-3 py-2 text-xs outline-none focus:border-red-400"
+      />
+      <div className="flex gap-2">
+        <button disabled={!reason.trim()} onClick={() => onConfirm(reason.trim())}
+          className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+          Confirm Reject
+        </button>
+        <button onClick={onCancel} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50">
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* â”€â”€ StartupDetailPanel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── InlineRejectControls ── */
+function InlineRejectControls({ onApprove, onReject }) {
+  const [showReject, setShowReject] = useState(false);
+  return (
+    <div className="space-y-2">
+      {!showReject && (
+        <div className="flex gap-2">
+          <button onClick={onApprove} className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700">Approve</button>
+          <button onClick={() => setShowReject(true)} className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100">Reject</button>
+        </div>
+      )}
+      {showReject && (
+        <InlineRejectForm onConfirm={(r) => { setShowReject(false); onReject(r); }} onCancel={() => setShowReject(false)} />
+      )}
+    </div>
+  );
+}
 function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onReject, onClose }) {
   const [detail,  setDetail]  = useState(null);
   const [loading, setLoading] = useState(true);
@@ -137,10 +201,7 @@ function StartupDetailPanel({ startupId, verReqId, initialStatus, onApprove, onR
           {certFile && (
             <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-700">Registration Certificate</p>
-              <a href={certFile.cloud_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50 transition">
-                <FileCheck className="h-4 w-4 shrink-0"/><span className="flex-1 truncate">Open Certificate</span><ExternalLink className="h-3.5 w-3.5 shrink-0"/>
-              </a>
+              <SecureFileButton fileId={certFile.id} fallbackUrl={certFile.cloud_url} label="Open Certificate" />
             </div>
           )}
           {mediaFiles.length > 0 && (
@@ -348,12 +409,10 @@ export default function VerificationSection() {
                       </a>
                     )}
                     {canAct && (
-                      <div className="flex gap-2">
-                        <button onClick={() => handleApprove(v.id, null)}
-                          className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700">Approve</button>
-                        <button onClick={async () => { const r = window.prompt("Rejection reason:"); if(r?.trim()) handleReject(v.id, r.trim()); }}
-                          className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100">Reject</button>
-                      </div>
+                      <InlineRejectControls
+                        onApprove={() => handleApprove(v.id, null)}
+                        onReject={(r) => handleReject(v.id, r)}
+                      />
                     )}
                     <button onClick={() => setExpanded(null)} className="text-xs text-slate-400 hover:text-slate-600">Close â†‘</button>
                   </div>
@@ -367,4 +426,5 @@ export default function VerificationSection() {
     </div>
   );
 }
+
 

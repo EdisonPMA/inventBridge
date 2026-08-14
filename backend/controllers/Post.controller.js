@@ -96,16 +96,8 @@ async function getFeed(req, res) {
       });
     }
 
-    // If authenticated, build a personalised feed
-    const authHeader = req.headers.authorization;
-    let viewerId = null;
-    if (authHeader?.startsWith("Bearer ")) {
-      try {
-        const { verifyToken } = require("../utils/jwt");
-        const decoded = verifyToken(authHeader.split(" ")[1]);
-        viewerId = decoded.id;
-      } catch { /* anonymous */ }
-    }
+    // Use req.user attached by optionalAuth middleware — respects token_version revocation
+    const viewerId = req.user?.id || null;
 
     let result;
     if (viewerId) {

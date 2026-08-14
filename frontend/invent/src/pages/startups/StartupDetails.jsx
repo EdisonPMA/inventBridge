@@ -276,15 +276,15 @@ export default function StartupDetails() {
                   {members.map((m) => (
                     <div key={m.id} className="flex items-center gap-3 py-3 first:pt-0">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-light text-sm font-bold text-primary overflow-hidden">
-                        {m.profile_photo
-                          ? <img src={m.profile_photo} alt="" className="h-full w-full object-cover" />
-                          : `${(m.first_name || "U").charAt(0)}${(m.last_name || "").charAt(0)}`.toUpperCase()
+                        {m.photo_url
+                          ? <img src={m.photo_url} alt="" className="h-full w-full object-cover" />
+                          : (m.name || "?").charAt(0).toUpperCase()
                         }
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{m.first_name} {m.last_name}</p>
+                        <p className="text-sm font-medium text-slate-800">{m.name}</p>
                         <p className="text-xs text-slate-500">
-                          {m.position || m.role}
+                          {m.position || "Member"}
                           {m.ownership_percentage > 0 && <span className="ml-1 text-primary">{m.ownership_percentage}%</span>}
                         </p>
                       </div>

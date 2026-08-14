@@ -20,14 +20,13 @@ async function getMe(req, res) {
 async function getAllUsers(req, res) {
   try {
     const { role, status, limit = 50, offset = 0 } = req.query;
-    const result = await User.findAll({
-      role, status,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
+    const safeLimit  = Math.max(1, Math.min(parseInt(limit,  10) || 50, 200));
+    const safeOffset = Math.max(0, parseInt(offset, 10) || 0);
+    const result = await User.findAll({ role, status, limit: safeLimit, offset: safeOffset });
     return res.json(result);
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    console.error("[getAllUsers]", err.message);
+    return res.status(500).json({ message: "Could not load users." });
   }
 }
 
